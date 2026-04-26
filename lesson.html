@@ -263,13 +263,30 @@ window.fcFlip = function(){
   document.getElementById('card-inner').classList.toggle('flipped', fc.flipped);
   document.getElementById('fc-rating').classList.toggle('visible', fc.flipped);
 };
-window.fcNav = function(dir){ fc.nav(dir); renderFC(); };
+window.fcNav = function(dir){ 
+  if (fc.flipped) {
+    document.getElementById('card-inner').classList.remove('flipped');
+    document.getElementById('fc-rating').classList.remove('visible');
+    setTimeout(() => {
+      fc.nav(dir); 
+      renderFC(); 
+    }, 250);
+  } else {
+    fc.nav(dir); 
+    renderFC(); 
+  }
+};
 window.fcShuffle = function(){ fc.shuffle(); renderFC(); };
 window.fcReset = function(){ fc.idx=0; fc.flipped=false; renderFC(); };
 window.fcRate = function(r){
-  fc.rate(r);
-  if(fc.isComplete()) showFCSummary();
-  else renderFC();
+  document.getElementById('card-inner').classList.remove('flipped');
+  document.getElementById('fc-rating').classList.remove('visible');
+  
+  setTimeout(() => {
+    fc.rate(r);
+    if(fc.isComplete()) showFCSummary();
+    else renderFC();
+  }, 250); // Wait for card to be edge-on before changing text
 };
 
 document.getElementById('card-wrap').addEventListener('click', fcFlip);
