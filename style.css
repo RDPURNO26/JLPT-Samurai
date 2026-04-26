@@ -222,6 +222,23 @@ nav.samurai-nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);backgrou
 /* ═══ FOOTER ═══ */
 .samurai-footer{text-align:center;padding:40px 20px;font-family:var(--font-mono);font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:60px}
 
+/* ═══ GUIDE MODAL ═══ */
+.guide-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+.guide-modal.open { display: flex; animation: fadeIn 0.3s ease; }
+.guide-content { background: var(--bg); border: 1px solid var(--red); width: 90%; max-width: 600px; max-height: 85vh; border-radius: 8px; overflow-y: auto; position: relative; box-shadow: 0 0 30px rgba(204,34,0,0.3); }
+.guide-header { position: sticky; top: 0; background: rgba(10,10,5,0.95); border-bottom: 1px solid var(--border); padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; backdrop-filter: blur(10px); }
+.guide-title { font-family: var(--font-head); font-size: 22px; color: var(--gold); letter-spacing: 2px; margin: 0; }
+.guide-close { background: none; border: none; color: var(--muted); font-size: 28px; cursor: pointer; transition: color 0.2s; padding: 0; line-height: 1; }
+.guide-close:hover { color: var(--red); }
+.guide-body { padding: 20px 24px 40px; font-size: 14px; line-height: 1.6; color: var(--white); }
+.guide-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.guide-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.guide-section h3 { font-family: var(--font-head); font-size: 16px; color: var(--red); margin-bottom: 12px; letter-spacing: 1px; }
+.guide-section p { margin-bottom: 10px; color: var(--muted); }
+.guide-section ul { margin: 0; padding-left: 20px; color: var(--muted); }
+.guide-section li { margin-bottom: 6px; }
+.guide-section strong { color: var(--white); }
+
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:768px){
   .qz-options{grid-template-columns:1fr}

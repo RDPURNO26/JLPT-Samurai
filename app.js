@@ -632,8 +632,9 @@ window.buildNavbar = function(activePage){
     <div class="nav-top">
       <a class="nav-brand" href="index.html">⚔️ JLPT SAMURAI <span>侍</span></a>
       ${window.CURRENT_USER ? `<div class="nav-user-chip" id="nav-user-chip" style="cursor:pointer;position:relative;user-select:none;">👤 ${shortName} ▼
-        <div id="user-dropdown-menu" style="display:none; position:absolute; right:0; top:36px; background:var(--card); min-width:150px; border:1px solid var(--border); border-radius:4px; box-shadow:0 8px 16px rgba(0,0,0,0.5); z-index:1000; text-align:left;">
-          <a href="profile.html" style="display:block; padding:12px; color:var(--white); text-decoration:none; font-family:var(--font-body); font-size:14px; border-bottom:1px solid var(--border);">❤️‍🩹 Profile & Trophy Room</a>
+        <div id="user-dropdown-menu" style="display:none; position:absolute; right:0; top:36px; background:var(--card); min-width:180px; border:1px solid var(--border); border-radius:4px; box-shadow:0 8px 16px rgba(0,0,0,0.5); z-index:1000; text-align:left;">
+          <a href="#" onclick="showGuide(); return false;" style="display:block; padding:12px; color:var(--gold); text-decoration:none; font-family:var(--font-body); font-size:14px; border-bottom:1px solid var(--border);">📖 How to Play</a>
+          <a href="profile.html" style="display:block; padding:12px; color:var(--white); text-decoration:none; font-family:var(--font-body); font-size:14px; border-bottom:1px solid var(--border);">❤️‍🩹 Profile & Trophies</a>
           <a href="#" onclick="logoutSamurai(); return false;" style="display:block; padding:12px; color:var(--red); text-decoration:none; font-family:var(--font-body); font-size:14px;">🚪 Log Out</a>
         </div>
       </div>` : ''}
@@ -684,7 +685,81 @@ window.logoutSamurai = function() {
 /* ═══ FOOTER BUILDER ═══ */
 window.buildFooter = function(){
   const f = document.querySelector('.samurai-footer');
-  if(f) f.innerHTML = '⚔️ JLPT Samurai — Master Japanese. One Slash at a Time. — 2026';
+  if(f) {
+    f.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <a href="#" onclick="showGuide(); return false;" style="color:var(--gold); text-decoration:none; font-family:var(--font-head); letter-spacing:1px; border:1px solid var(--gold); padding:4px 12px; border-radius:20px; display:inline-block; transition:all 0.3s;" onmouseover="this.style.background='var(--gold)';this.style.color='#000';" onmouseout="this.style.background='transparent';this.style.color='var(--gold)';">📖 HOW TO PLAY</a>
+      </div>
+      ⚔️ JLPT Samurai — Master Japanese. One Slash at a Time. — 2026
+    `;
+  }
+};
+
+/* ═══ THE DOJO GUIDE (HOW TO PLAY) ═══ */
+window.showGuide = function() {
+  let modal = document.getElementById('dojo-guide-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'dojo-guide-modal';
+    modal.className = 'guide-modal';
+    modal.innerHTML = `
+      <div class="guide-content">
+        <div class="guide-header">
+          <h2 class="guide-title" style="font-family:var(--font-body); font-weight:bold;">📖 ডোজো গাইড (কীভাবে খেলবেন)</h2>
+          <button class="guide-close" onclick="document.getElementById('dojo-guide-modal').classList.remove('open')">&times;</button>
+        </div>
+        <div class="guide-body" style="font-family:var(--font-body);">
+          <div class="guide-section">
+            <h3 style="font-family:var(--font-body); font-weight:bold;">📈 XP এবং গ্লোবাল র‍্যাঙ্কিং</h3>
+            <p>আপনি যখনই পড়াশোনা করবেন, আপনি <strong>Experience Points (XP)</strong> অর্জন করবেন। আপনার মোট XP আপনার র‍্যাঙ্ক (Ashigaru থেকে Shogun) নির্ধারণ করবে।</p>
+            <ul>
+              <li><strong>একটি শব্দ পুরোপুরি শিখলে (Mastered):</strong> +২৫ XP</li>
+              <li><strong>একটি শব্দ শিখলে (Learned):</strong> +১০ XP</li>
+              <li><strong>প্রতিদিনের স্ট্রিক (Daily Streak):</strong> প্রতিদিন +৫০ XP!</li>
+            </ul>
+            <p>আপনার XP স্বয়ংক্রিয়ভাবে ক্লাউডে সেভ হয়ে যাবে। আপনি বিশ্বের অন্যান্যদের তুলনায় কোথায় আছেন তা দেখতে <strong>Rankings</strong> ট্যাবে চেক করুন!</p>
+          </div>
+          
+          <div class="guide-section">
+            <h3 style="font-family:var(--font-body); font-weight:bold;">🎴 ফ্ল্যাশকার্ড এবং মাস্টারি</h3>
+            <p>ডোজো আপনাকে সহজে মনে রাখতে Spaced Repetition (SRS) পদ্ধতি ব্যবহার করে। ফ্ল্যাশকার্ড পড়ার সময়, আপনি কতটা সহজে শব্দটি মনে করতে পেরেছেন তা সততার সাথে রেট করুন:</p>
+            <ul>
+              <li><strong>Easy / Good:</strong> শব্দটি "Mastered" হিসেবে চিহ্নিত হবে এবং আপনাকে এটি অনেক কম দেখানো হবে।</li>
+              <li><strong>Hard / Again:</strong> শব্দটি "Weak" হিসেবে চিহ্নিত হবে এবং আপনাকে এটি বারবার প্র্যাকটিস করতে হবে।</li>
+            </ul>
+          </div>
+          
+          <div class="guide-section">
+            <h3 style="font-family:var(--font-body); font-weight:bold;">🔓 নতুন লেসন আনলক করা</h3>
+            <p>পরবর্তী লেসনে যেতে হলে আপনাকে আপনার দক্ষতা প্রমাণ করতে হবে। আপনার দুটি অপশন আছে:</p>
+            <ul>
+              <li><strong>প্রথম পদ্ধতি:</strong> একটি লেসনের সমস্ত ফ্ল্যাশকার্ড সম্পন্ন করা।</li>
+              <li><strong>দ্বিতীয় পদ্ধতি:</strong> লক করা কুইজে <strong>"⚔️ Challenge the Dojo"</strong> বাটনে ক্লিক করুন। যদি আপনি <strong>৮৫% বা তার বেশি</strong> স্কোর করতে পারেন, তাহলে ফ্ল্যাশকার্ড না করেই লেসনটি সাথে সাথে আনলক হয়ে যাবে!</li>
+            </ul>
+          </div>
+
+          <div class="guide-section">
+            <h3 style="font-family:var(--font-body); font-weight:bold;">❤️‍🩹 ইনফারমারি (The Infirmary)</h3>
+            <p>কুইজের সময় আপনি যে শব্দগুলোর ভুল উত্তর দেবেন, সেগুলো স্বয়ংক্রিয়ভাবে ইনফারমারিতে (আপনার <strong>Profile</strong> এ অবস্থিত) চলে যাবে।</p>
+            <p>আপনি ইনফারমারিতে গিয়ে শুধুমাত্র আপনার দুর্বল শব্দগুলোর ওপর কুইজ দিতে পারবেন। সেগুলোতে ভালো স্কোর করলে শব্দগুলো "সুস্থ" বা কিউর হয়ে যাবে!</p>
+          </div>
+
+          <div class="guide-section">
+            <h3 style="font-family:var(--font-body); font-weight:bold;">🏆 গ্র্যান্ড ডোজো (The Grand Dojo)</h3>
+            <p>N5 পেজের একদম নিচে অবস্থিত গ্র্যান্ড ডোজো হলো আপনার চূড়ান্ত পরীক্ষা। আপনি যতগুলো লেসন আনলক করেছেন, সবগুলোর শব্দ নিয়ে এটি একটি বিশাল ও র‍্যান্ডম কুইজ তৈরি করে।</p>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Close on click outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('open');
+    });
+  }
+  
+  modal.classList.add('open');
 };
 
 })();
