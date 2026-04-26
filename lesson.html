@@ -377,7 +377,6 @@ function renderQuestion(){
   if(q.type==='audio'){
     displayHTML = `<div style="font-size:56px;cursor:pointer" onclick="speak('${esc(q.w.jp)}')">🔊</div>
       <div style="font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-top:4px">CLICK TO HEAR</div>`;
-    setTimeout(()=>speak(q.w.jp), 300);
   } else {
     displayHTML = `<div class="qz-word">${esc(q.display)}</div>`;
     if(q.displaySub) displayHTML += `<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-top:4px">${esc(q.displaySub)}</div>`;
