@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>JLPT Samurai — Profile & Infirmary</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+.profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px; margin: 0 auto; }
+.profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.pc-title { font-family: var(--font-head); font-size: 18px; color: var(--gold); letter-spacing: 2px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.stat-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-family: var(--font-mono); font-size: 14px; }
+.stat-val { color: var(--white); font-weight: bold; }
+
+.achievements { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; }
+.badge { text-align: center; opacity: 0.3; filter: grayscale(1); transition: all 0.3s; }
+.badge.unlocked { opacity: 1; filter: none; }
+.badge-icon { font-size: 32px; margin-bottom: 8px; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+.badge.unlocked .badge-icon { text-shadow: 0 0 15px var(--gold); transform: scale(1.1); }
+.badge-name { font-family: var(--font-head); font-size: 10px; color: var(--white); letter-spacing: 1px; }
+
+.infirmary-box { text-align: center; padding: 20px 0; }
+.inf-count { font-size: 48px; color: var(--red); font-family: var(--font-mono); font-weight: bold; text-shadow: 0 0 20px var(--red-glow); margin-bottom: 8px; }
+.inf-desc { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+
+@media (max-width: 600px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="page-loader"><div class="logo">⚔️ JLPT SAMURAI</div><div class="bar"><div class="bar-fill"></div></div></div>
+<canvas id="sakura-canvas"></canvas>
+<nav class="samurai-nav"></nav>
+
+<div class="page-wrap">
+  <div class="page-title" id="profile-name">Samurai Profile</div>
+  <div class="page-sub" id="profile-title">Loading stats...</div>
+  <div class="ink-divider"></div>
+
+  <div class="profile-grid">
+    <!-- STATS -->
+    <div class="profile-card">
+      <div class="pc-title">📊 COMBAT RECORD</div>
+      <div class="stat-row"><span>Total XP</span><span class="stat-val" id="stat-xp">0</span></div>
+      <div class="stat-row"><span>Words Mastered</span><span class="stat-val" id="stat-words">0</span></div>
+      <div class="stat-row"><span>Kanji Mastered</span><span class="stat-val" id="stat-kanji">0</span></div>
+      <div class="stat-row"><span>Current Streak</span><span class="stat-val" id="stat-streak">0 days</span></div>
+    </div>
+
+    <!-- INFIRMARY -->
+    <div class="profile-card">
+      <div class="pc-title">❤️‍🩹 THE INFIRMARY</div>
+      <div class="infirmary-box">
+        <div class="inf-count" id="inf-count">0</div>
+        <div class="inf-desc">Words that wounded you in battle.</div>
+        <a href="lesson.html?type=weak_vocab" class="btn btn-primary" id="inf-btn" style="text-decoration:none;display:inline-block;padding:12px 24px;">⚔️ SOLVE IT</a>
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENTS -->
+    <div class="profile-card" style="grid-column: 1 / -1;">
+      <div class="pc-title">🏆 TROPHY ROOM</div>
+      <div class="achievements" id="badges-container">
+        <!-- Generated via JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="samurai-footer"></footer>
+<script src="data-loader.js"></script>
+<script src="app.js"></script>
+<script>
+(function(){
+  window.addEventListener('samurai-data-ready', init);
+  loadSamuraiData(); buildNavbar('profile'); buildFooter(); initSakura(); hideLoader();
+
+  function init(){
+    const username = localStorage.getItem('samurai_username') || localStorage.getItem('samurai_active_email')?.split('@')[0] || 'Ronin';
+    document.getElementById('profile-name').textContent = username.toUpperCase();
+    
+    // Calculate Stats
+    const stats = getDashboardStats();
+    let totalXP = 0;
+    const prefix = window.CURRENT_USER + '_';
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k.startsWith(prefix) && k.includes('mastery')) {
+        const val = localStorage.getItem(k);
+        if (val === 'learned') totalXP += 10;
+        if (val === 'mastered') totalXP += 25;
+      }
+    }
+    totalXP += stats.streak * 50;
+
+    document.getElementById('stat-xp').textContent = totalXP.toLocaleString();
+    document.getElementById('stat-words').textContent = stats.mastered;
+    document.getElementById('stat-kanji').textContent = stats.kanjiLearned;
+    document.getElementById('stat-streak').textContent = stats.streak + (stats.streak===1?' day':' days');
+
+    let title = 'Ashigaru';
+    if(totalXP > 10000) title = 'Shogun';
+    else if(totalXP > 5000) title = 'Daimyo';
+    else if(totalXP > 1000) title = 'Samurai';
+    else if(totalXP > 0) title = 'Ronin';
+    document.getElementById('profile-title').textContent = title + ' Rank';
+
+    // Infirmary
+    const weakWords = getAllWeakWords();
+    const countEl = document.getElementById('inf-count');
+    countEl.textContent = weakWords.length;
+    if(weakWords.length === 0) {
+      countEl.style.color = 'var(--green)';
+      countEl.style.textShadow = '0 0 20px rgba(0,255,0,0.5)';
+      document.getElementById('inf-btn').style.display = 'none';
+      document.querySelector('.inf-desc').textContent = 'Your mind is clear. No weak words found.';
+    }
+
+    // Achievements
+    const badges = [
+      { id: 'first_blood', name: 'First Blood', icon: '🩸', desc: 'Mastered 10 words', unlocked: stats.mastered >= 10 },
+      { id: 'sword_master', name: 'Sword Master', icon: '⚔️', desc: 'Mastered 100 words', unlocked: stats.mastered >= 100 },
+      { id: 'kanji_scholar', name: 'Kanji Scholar', icon: '🀄', desc: 'Mastered 50 Kanji', unlocked: stats.kanjiLearned >= 50 },
+      { id: 'unbroken', name: 'Unbroken', icon: '🔥', desc: '7 Day Streak', unlocked: stats.streak >= 7 },
+      { id: 'shogun_mind', name: 'Grandmaster', icon: '🏯', desc: '5,000 XP Reached', unlocked: totalXP >= 5000 }
+    ];
+
+    let badgeHTML = '';
+    badges.forEach(b => {
+      badgeHTML += `<div class="badge ${b.unlocked ? 'unlocked' : ''}" title="${b.desc}">
+        <div class="badge-icon">${b.icon}</div>
+        <div class="badge-name">${b.name}</div>
+      </div>`;
+    });
+    document.getElementById('badges-container').innerHTML = badgeHTML;
+  }
+})();
+</script>
+</body>
+</html>

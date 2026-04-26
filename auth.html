@@ -30,7 +30,8 @@ body { display: flex; justify-content: center; align-items: center; min-height: 
   <div id="auth-error"></div>
   
   <form id="auth-form" onsubmit="handleAuth(event)">
-    <input type="text" id="auth-user" class="auth-input" placeholder="Username" required autocomplete="off">
+    <input type="text" id="auth-user" class="auth-input" placeholder="Username or Email" required autocomplete="off">
+    <input type="email" id="auth-email" class="auth-input" placeholder="Email Address" style="display:none;" autocomplete="off">
     <input type="password" id="auth-pass" class="auth-input" placeholder="Password" required>
     <button type="submit" class="auth-btn" id="auth-submit">Login</button>
   </form>
@@ -51,37 +52,76 @@ function toggleMode() {
     ? "Don't have an account? <b>Sign up</b>" 
     : "Already have an account? <b>Log in</b>";
   document.getElementById('auth-error').style.display = 'none';
+  
+  const userField = document.getElementById('auth-user');
+  const emailField = document.getElementById('auth-email');
+  if (mode === 'signup') {
+    userField.placeholder = "Choose a Username";
+    emailField.style.display = 'block';
+    emailField.required = true;
+  } else {
+    userField.placeholder = "Username or Email";
+    emailField.style.display = 'none';
+    emailField.required = false;
+  }
 }
 
-function handleAuth(e) {
+async function handleAuth(e) {
   e.preventDefault();
   const u = document.getElementById('auth-user').value.trim();
+  const emailVal = document.getElementById('auth-email').value.trim();
   const p = document.getElementById('auth-pass').value;
   
-  if(u.length < 5 || !u.includes('@')) { showError("Please enter a valid email address."); return; }
-  if(p.length < 6) { showError("Password must be at least 6 characters."); return; }
+  if (u.length < 3) { showError("Username must be at least 3 characters."); return; }
+  if (mode === 'signup' && (emailVal.length < 5 || !emailVal.includes('@'))) { showError("Please enter a valid email address."); return; }
+  if (p.length < 6) { showError("Password must be at least 6 characters."); return; }
   
   const btn = document.getElementById('auth-submit');
   btn.disabled = true;
   btn.textContent = 'Processing...';
 
-  initFirebase(() => {
-    if (mode === 'signup') {
-      firebase.auth().createUserWithEmailAndPassword(u, p)
-        .then((cred) => loginSuccess(cred.user.uid, u))
-        .catch((error) => {
-          handleFirebaseError(error);
-          btn.disabled = false;
-          btn.textContent = 'Create Account';
-        });
-    } else {
-      firebase.auth().signInWithEmailAndPassword(u, p)
-        .then((cred) => loginSuccess(cred.user.uid, u))
-        .catch((error) => {
-          handleFirebaseError(error);
-          btn.disabled = false;
-          btn.textContent = 'Login';
-        });
+  initFirebase(async () => {
+    try {
+      if (mode === 'signup') {
+        // 1. Check if username exists
+        const usernameDoc = await firebase.firestore().collection('samurai_usernames').doc(u.toLowerCase()).get();
+        if (usernameDoc.exists) {
+          throw new Error("Username is already taken.");
+        }
+        
+        // 2. Create Auth User
+        const cred = await firebase.auth().createUserWithEmailAndPassword(emailVal, p);
+        
+        // 3. Save username mapping and profile
+        await firebase.firestore().collection('samurai_usernames').doc(u.toLowerCase()).set({ email: emailVal });
+        await firebase.firestore().collection('samurai_users').doc(cred.user.uid).set({ username: u }, { merge: true });
+        
+        loginSuccess(cred.user.uid, emailVal, u);
+      } else {
+        // Login Flow
+        let loginEmail = u;
+        // If they didn't enter an email, look up the username
+        if (!u.includes('@')) {
+          const usernameDoc = await firebase.firestore().collection('samurai_usernames').doc(u.toLowerCase()).get();
+          if (!usernameDoc.exists) {
+            throw new Error("Username not found.");
+          }
+          loginEmail = usernameDoc.data().email;
+        }
+        
+        const cred = await firebase.auth().signInWithEmailAndPassword(loginEmail, p);
+        
+        // Fetch their username for local storage
+        let usernameToSave = u.includes('@') ? loginEmail.split('@')[0] : u;
+        const userDoc = await firebase.firestore().collection('samurai_users').doc(cred.user.uid).get();
+        if(userDoc.exists && userDoc.data().username) usernameToSave = userDoc.data().username;
+        
+        loginSuccess(cred.user.uid, loginEmail, usernameToSave);
+      }
+    } catch (error) {
+      handleFirebaseError(error);
+      btn.disabled = false;
+      btn.textContent = mode === 'login' ? 'Login' : 'Create Account';
     }
   });
 }
@@ -90,11 +130,13 @@ function handleFirebaseError(error) {
   let msg = error.message;
   // Make obscure Firebase errors user-friendly
   if (error.code === 'auth/invalid-login-credentials' || msg.includes('INVALID_LOGIN_CREDENTIALS') || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-    msg = "Incorrect email or password.";
+    msg = "Incorrect username, email, or password.";
   } else if (error.code === 'auth/email-already-in-use') {
     msg = "An account with this email already exists.";
   } else if (error.code === 'auth/weak-password') {
     msg = "Password is too weak. Please use at least 6 characters.";
+  } else if (msg === "Username is already taken." || msg === "Username not found.") {
+    // Keep custom errors as is
   }
   showError(msg);
 }
@@ -105,10 +147,11 @@ function showError(msg) {
   err.style.display = 'block';
 }
 
-function loginSuccess(uid, email) {
+function loginSuccess(uid, email, username) {
   slashAnimation();
   localStorage.setItem('samurai_active_user', uid);
   localStorage.setItem('samurai_active_email', email);
+  if(username) localStorage.setItem('samurai_username', username);
   setTimeout(() => {
     window.location.href = 'index.html';
   }, 600);
@@ -120,7 +163,13 @@ window.addEventListener('DOMContentLoaded', () => {
     initFirebase(() => {
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
-          loginSuccess(user.uid, user.email);
+          // Attempt to fetch username
+          firebase.firestore().collection('samurai_users').doc(user.uid).get().then(doc => {
+            const username = doc.exists && doc.data().username ? doc.data().username : user.email.split('@')[0];
+            loginSuccess(user.uid, user.email, username);
+          }).catch(() => {
+            loginSuccess(user.uid, user.email, user.email.split('@')[0]);
+          });
         }
       });
     });

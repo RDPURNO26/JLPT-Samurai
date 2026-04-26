@@ -157,13 +157,28 @@ window.debouncedSync = function() {
     if (!window.CURRENT_USER || !window.db) return;
     const prefix = window.CURRENT_USER + '_';
     const data = {};
+    let xp = 0;
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (k.startsWith(prefix)) {
-        data[k.substring(prefix.length)] = localStorage.getItem(k);
+        const keyName = k.substring(prefix.length);
+        const val = localStorage.getItem(k);
+        data[keyName] = val;
+        
+        // Calculate XP
+        if (keyName.includes('mastery')) {
+          if (val === 'learned') xp += 10;
+          if (val === 'mastered') xp += 25;
+        }
       }
     }
-    window.db.collection('samurai_users').doc(window.CURRENT_USER).set(data).catch(console.error);
+    const streak = parseInt(data['streak']) || 0;
+    xp += streak * 50; // Bonus for streaks
+    
+    data.xp = xp;
+    data.username = localStorage.getItem('samurai_username') || localStorage.getItem('samurai_active_email').split('@')[0];
+    
+    window.db.collection('samurai_users').doc(window.CURRENT_USER).set(data, {merge: true}).catch(console.error);
   }, 2000);
 };
 
@@ -282,12 +297,12 @@ window.getDashboardStats = function(){
   let mastered=0, lessonsComplete=0, kanjiLearned=0, needsReview=0;
   for(const lid of Object.keys(data.vocab)){
     let allMastered = true, anyStarted = false;
-    data.vocab[lid].forEach((_,i) => {
-      const m = getWordMastery('vocab', lid, i);
+    data.vocab[lid].forEach((w,i) => {
+      const m = getWordMastery('vocab', w.lessonId, w.originalIdx);
       if(m==='mastered'||m==='learned') mastered++;
       if(m!=='unseen') anyStarted = true;
       if(m!=='mastered') allMastered = false;
-      if(isWeakWord('vocab', lid, i)) needsReview++;
+      if(isWeakWord('vocab', w.lessonId, w.originalIdx)) needsReview++;
     });
     if(anyStarted && allMastered && data.vocab[lid].length > 0) lessonsComplete++;
   }
@@ -304,12 +319,12 @@ window.getLessonStatus = function(lessonId){
   if(!data || !data.vocab[lessonId] || data.vocab[lessonId].length===0) return {status:'empty',pct:0,total:0,weak:0,due:0};
   const words = data.vocab[lessonId];
   let seen=0, mastered=0, weak=0, due=0;
-  words.forEach((_,i)=>{
-    const m = getWordMastery('vocab', lessonId, i);
+  words.forEach((w,i)=>{
+    const m = getWordMastery('vocab', w.lessonId, w.originalIdx);
     if(m!=='unseen') seen++;
     if(m==='mastered') mastered++;
-    if(isWeakWord('vocab', lessonId, i)) weak++;
-    if(isDueToday('vocab', lessonId, i)) due++;
+    if(isWeakWord('vocab', w.lessonId, w.originalIdx)) weak++;
+    if(isDueToday('vocab', w.lessonId, w.originalIdx)) due++;
   });
   const pct = Math.round(mastered/words.length*100);
   let status = '🔴';
@@ -408,14 +423,14 @@ window.SamuraiQuiz = class {
     let pool = [...this.allWords];
     // Smart weighting: weak words 3x, easy 1x, unseen prioritized
     const weighted = [];
-    pool.forEach((w,i) => {
-      const weak = isWeakWord(this.isKanji?'kanji':'vocab', this.lessonId, i);
-      const rating = getWordRating(this.isKanji?'kanji':'vocab', this.lessonId, i);
+    pool.forEach((w) => {
+      const weak = isWeakWord(this.isKanji?'kanji':'vocab', w.lessonId, w.originalIdx);
+      const rating = getWordRating(this.isKanji?'kanji':'vocab', w.lessonId, w.originalIdx);
       let weight = 2;
       if(weak) weight = 4;
       else if(rating==='easy') weight = 1;
       else if(!rating) weight = 3; // unseen prioritized
-      for(let j=0;j<weight;j++) weighted.push({word:w, origIdx:i});
+      for(let j=0;j<weight;j++) weighted.push({word:w, origIdx: w.originalIdx});
     });
     // Shuffle and pick
     for(let i=weighted.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[weighted[i],weighted[j]]=[weighted[j],weighted[i]];}
@@ -429,7 +444,8 @@ window.SamuraiQuiz = class {
     }
     // If not enough unique, cycle
     while(picked.length < this.count && pool.length > 0){
-      picked.push({word: pool[picked.length % pool.length], origIdx: picked.length % pool.length});
+      const pWord = pool[picked.length % pool.length];
+      picked.push({word: pWord, origIdx: pWord.originalIdx});
     }
 
     const types = this.isKanji ? ['kanji_bn','kanji_reading'] : ['jp_bn','bn_jp','audio','roma'];
@@ -494,7 +510,7 @@ window.SamuraiQuiz = class {
     } else {
       this.curStreak = 0;
       this.wrongs.push(q);
-      recordQuizWrong(this.isKanji?'kanji':'vocab', this.lessonId, q.origIdx);
+      recordQuizWrong(this.isKanji?'kanji':'vocab', q.w.lessonId, q.w.originalIdx);
     }
     return isCorrect;
   }
@@ -542,8 +558,8 @@ window.SamuraiFlashcards = class {
 
   _getFilteredDeck(){
     if(this.filter==='all') return [...this.allWords];
-    return this.allWords.filter((_,i) => {
-      const r = getWordRating(this.isKanji?'kanji':'vocab', this.lessonId, i);
+    return this.allWords.filter((w) => {
+      const r = getWordRating(this.isKanji?'kanji':'vocab', w.lessonId, w.originalIdx);
       if(this.filter==='hard') return r==='again'||r==='hard';
       if(this.filter==='good') return r==='good';
       if(this.filter==='easy') return r==='easy';
@@ -567,8 +583,7 @@ window.SamuraiFlashcards = class {
   rate(rating){
     const w = this.current();
     if(!w) return;
-    const origIdx = this.allWords.indexOf(w);
-    saveRating(this.isKanji?'kanji':'vocab', this.lessonId, origIdx>=0?origIdx:this.idx, rating);
+    saveRating(this.isKanji?'kanji':'vocab', w.lessonId, w.originalIdx, rating);
     this.sessionRatings[this.idx] = rating;
     this.reviewedCount++;
     // Again: reinsert 2 cards later
@@ -610,6 +625,8 @@ window.buildNavbar = function(activePage){
     </div>
     <div class="nav-links">
       <a class="nav-link ${activePage==='home'?'active':''}" href="index.html">Home</a>
+      <a class="nav-link ${activePage==='profile'?'active':''}" href="profile.html">Profile</a>
+      <a class="nav-link ${activePage==='leaderboard'?'active':''}" href="leaderboard.html">Rankings</a>
       <a class="nav-link ${activePage==='n5'?'active':''}" href="n5.html">N5</a>
       <a class="nav-link ${activePage==='n4'?'active':''}" href="n4.html">N4</a>
       <a class="nav-link ${activePage==='kana'?'active':''}" href="kana.html">Kana</a>

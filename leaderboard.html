@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>JLPT Samurai — Leaderboard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+.lb-table { width: 100%; max-width: 600px; margin: 0 auto; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+.lb-table th { background: rgba(0,0,0,0.4); padding: 16px; text-align: left; font-family: var(--font-head); font-size: 14px; color: var(--gold); letter-spacing: 2px; }
+.lb-table td { padding: 16px; border-bottom: 1px solid var(--border); font-family: var(--font-body); color: var(--white); }
+.lb-table tr:last-child td { border-bottom: none; }
+.lb-table tr { transition: background 0.2s; }
+.lb-table tr:hover { background: rgba(204,34,0,0.1); }
+.rank-1 { color: #FFD700 !important; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+.rank-2 { color: #C0C0C0 !important; font-size: 18px; font-weight: bold; }
+.rank-3 { color: #CD7F32 !important; font-size: 18px; font-weight: bold; }
+.lb-name { font-weight: bold; font-family: var(--font-mono); }
+.lb-xp { color: var(--green); font-family: var(--font-mono); font-weight: bold; text-align: right; }
+.lb-title { font-size: 11px; color: var(--muted); display: block; margin-top: 4px; font-family: var(--font-head); letter-spacing: 1px; }
+</style>
+</head>
+<body>
+<div id="page-loader"><div class="logo">⚔️ JLPT SAMURAI</div><div class="bar"><div class="bar-fill"></div></div></div>
+<canvas id="sakura-canvas"></canvas>
+<nav class="samurai-nav"></nav>
+
+<div class="page-wrap">
+  <div class="page-title">GLOBAL LEADERBOARD</div>
+  <div class="page-sub">The greatest warriors in the Samurai Dojo</div>
+  <div class="ink-divider"></div>
+
+  <div id="lb-container" style="text-align:center; padding: 40px 0;">
+    <div style="color:var(--gold); font-family:var(--font-head); letter-spacing:2px; animation: pulse 1.5s infinite;">Summoning records...</div>
+  </div>
+</div>
+
+<footer class="samurai-footer"></footer>
+<script src="app.js"></script>
+<script>
+(function(){
+  buildNavbar('leaderboard');
+  buildFooter();
+  initSakura();
+  
+  window.addEventListener('DOMContentLoaded', () => {
+    initFirebase(() => {
+      fetchLeaderboard();
+    });
+  });
+
+  async function fetchLeaderboard() {
+    const container = document.getElementById('lb-container');
+    try {
+      const snapshot = await window.db.collection('samurai_users')
+        .orderBy('xp', 'desc')
+        .limit(50)
+        .get();
+
+      if(snapshot.empty) {
+        container.innerHTML = `<p style="color:var(--muted)">No records found. Be the first to claim glory!</p>`;
+        hideLoader();
+        return;
+      }
+
+      let html = `<table class="lb-table"><thead><tr>
+        <th style="width:60px;text-align:center">Rank</th>
+        <th>Samurai</th>
+        <th style="text-align:right">XP</th>
+      </tr></thead><tbody>`;
+
+      let rank = 1;
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const xp = data.xp || 0;
+        const name = data.username || data.email?.split('@')[0] || 'Unknown Ronin';
+        
+        let rankCls = '';
+        let title = 'Ashigaru';
+        if(rank === 1) { rankCls = 'rank-1'; title = 'Shogun 👑'; }
+        else if(rank === 2) { rankCls = 'rank-2'; title = 'Daimyo'; }
+        else if(rank === 3) { rankCls = 'rank-3'; title = 'Daimyo'; }
+        else if(rank <= 10) title = 'Samurai';
+        else title = 'Ronin';
+
+        const isMe = window.CURRENT_USER && window.CURRENT_USER === doc.id;
+
+        html += `<tr style="${isMe ? 'background:rgba(204,34,0,0.15)' : ''}">
+          <td style="text-align:center" class="${rankCls}">${rank}</td>
+          <td>
+            <div class="lb-name">${name} ${isMe ? '<span style="color:var(--gold);font-size:12px">(You)</span>' : ''}</div>
+            <div class="lb-title">${title}</div>
+          </td>
+          <td class="lb-xp">${xp.toLocaleString()}</td>
+        </tr>`;
+        rank++;
+      });
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+      hideLoader();
+    } catch(err) {
+      console.error(err);
+      container.innerHTML = `<p style="color:var(--red)">Failed to load records. The scrolls are sealed.</p>`;
+      hideLoader();
+    }
+  }
+})();
+</script>
+</body>
+</html>

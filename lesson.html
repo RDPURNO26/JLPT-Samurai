@@ -139,10 +139,33 @@ hideLoader();
 
 function init(){
   const data = window.SAMURAI_DATA;
-  WORDS = data.vocab[LESSON_ID] || [];
-  document.getElementById('lesson-title').textContent = `Lesson ${LESSON_ID} — The Dojo`;
-  document.getElementById('lesson-sub').textContent = `${WORDS.length} words · Click 🔊 for audio · Reveal romaji`;
-  document.title = `JLPT Samurai — Lesson ${LESSON_ID}`;
+  const type = params.get('type');
+  
+  if (type === 'grand_vocab') {
+    const maxLesson = parseInt(lsGet('samurai_max_lesson')) || 1;
+    WORDS = [];
+    for (let i = 1; i <= maxLesson; i++) {
+      if (data.vocab[i]) WORDS = WORDS.concat(data.vocab[i]);
+    }
+    document.getElementById('lesson-title').textContent = `🏆 GRAND DOJO`;
+    document.getElementById('lesson-sub').textContent = `Cumulative Trial (Lessons 1 to ${maxLesson}) · ${WORDS.length} words`;
+    document.title = `JLPT Samurai — Grand Dojo`;
+  } else if (type === 'weak_vocab') {
+    WORDS = getAllWeakWords();
+    document.getElementById('lesson-title').textContent = `❤️‍🩹 THE INFIRMARY`;
+    document.getElementById('lesson-sub').textContent = `Targeted Weakness Training · ${WORDS.length} words`;
+    document.title = `JLPT Samurai — Weak Words`;
+  } else {
+    WORDS = data.vocab[LESSON_ID] || [];
+    // Track max lesson
+    const curMax = parseInt(lsGet('samurai_max_lesson')) || 0;
+    if (LESSON_ID > curMax && WORDS.length > 0) lsSet('samurai_max_lesson', LESSON_ID);
+    
+    document.getElementById('lesson-title').textContent = `Lesson ${LESSON_ID} — The Dojo`;
+    document.getElementById('lesson-sub').textContent = `${WORDS.length} words · Click 🔊 for audio · Reveal romaji`;
+    document.title = `JLPT Samurai — Lesson ${LESSON_ID}`;
+  }
+
   buildWordList(WORDS);
   initFlashcards();
   initQuizUI();
@@ -165,7 +188,7 @@ function buildWordList(words){
     <th>#</th><th>Japanese</th><th class="roma-cell">Romaji</th><th>Bangla</th><th>🔊</th>
   </tr></thead><tbody>`;
   words.forEach((w,i)=>{
-    const mastery = getWordMastery('vocab', LESSON_ID, i);
+    const mastery = getWordMastery('vocab', w.lessonId, w.originalIdx);
     const dot = MASTERY_ICONS[mastery] || '⚪';
     const roma = w.roma || '—';
     html += `<tr style="animation-delay:${i*20}ms">
@@ -293,7 +316,8 @@ function initQuizUI(){
     });
   });
   // Check if flashcards done (unlock quiz)
-  if(!lsGet(`samurai_fc_done_${LESSON_ID}`)){
+  const type = params.get('type');
+  if(!lsGet(`samurai_fc_done_${LESSON_ID}`) && type !== 'grand_vocab' && type !== 'weak_vocab'){
     document.getElementById('quiz-setup').innerHTML = `<div class="quiz-setup">
       <p style="color:var(--muted);font-size:14px;margin:40px 0">Complete flashcards first to unlock quiz ⚔️</p>
       <button class="btn" onclick="showTab('flash');document.querySelectorAll('.tab-btn')[1].click()">Go to Flashcards →</button>
@@ -312,8 +336,8 @@ window.startQuiz = function(){
   const count = getRadio('qc-row') || '20';
 
   let words = [...WORDS];
-  if(pool==='hard') words = words.filter((_,i)=>isWeakWord('vocab',LESSON_ID,i));
-  if(pool==='unseen') words = words.filter((_,i)=>!getWordRating('vocab',LESSON_ID,i));
+  if(pool==='hard') words = words.filter(w=>isWeakWord('vocab',w.lessonId,w.originalIdx));
+  if(pool==='unseen') words = words.filter(w=>!getWordRating('vocab',w.lessonId,w.originalIdx));
   if(!words.length){ alert('No words in selected pool!'); return; }
 
   quiz = new SamuraiQuiz(words, {type, count, pool, lessonId: LESSON_ID});
@@ -410,7 +434,9 @@ function showQuizResult(){
         <span class="wrong-jp">${esc(q.w.jp)}</span><span class="wrong-bn">${esc(q.w.bn)}</span>
         <button class="speak-btn" onclick="speak('${esc(q.w.jp)}',this)">🔊</button></div>`;
     });
-    html += '</div>';
+    html += `<div style="text-align:center;margin-top:16px;">
+      <a href="profile.html" class="btn" style="text-decoration:none;display:inline-block;border:1px solid var(--red);color:var(--red);">❤️‍🩹 Visit the Infirmary</a>
+    </div></div>`;
   }
 
   html += `<div style="margin-top:24px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
