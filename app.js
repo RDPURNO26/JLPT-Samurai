@@ -604,14 +604,16 @@ window.buildNavbar = function(activePage){
   const shortName = userDisplay.split('@')[0];
   
   nav.innerHTML = `
-    <a class="nav-brand" href="index.html">⚔️ JLPT SAMURAI <span>侍</span></a>
+    <div class="nav-top">
+      <a class="nav-brand" href="index.html">⚔️ JLPT SAMURAI <span>侍</span></a>
+      ${window.CURRENT_USER ? `<div class="nav-user-chip" onclick="logout()" title="Click to logout">👤 ${shortName}</div>` : ''}
+    </div>
     <div class="nav-links">
       <a class="nav-link ${activePage==='home'?'active':''}" href="index.html">Home</a>
       <a class="nav-link ${activePage==='n5'?'active':''}" href="n5.html">N5</a>
       <a class="nav-link ${activePage==='n4'?'active':''}" href="n4.html">N4</a>
       <a class="nav-link ${activePage==='kana'?'active':''}" href="kana.html">Kana</a>
       <a class="nav-link ${activePage==='about'?'active':''}" href="about.html">About</a>
-      ${window.CURRENT_USER ? `<div class="nav-user-chip" onclick="logout()" title="Click to logout">👤 ${shortName}</div>` : ''}
     </div>`;
 };
 
