@@ -84,8 +84,17 @@ window.speak = function(text, btnEl){
 
 /* ═══ FIREBASE CLOUD SYNC ═══ */
 const FIREBASE_VERSION = "8.10.1";
+let isFirebaseLoading = false;
+let firebaseCallbacks = [];
+
 window.initFirebase = function(callback) {
-  if (window.firebase) { if(callback) callback(); return; }
+  if (window.db) { if(callback) callback(); return; }
+  
+  if (callback) firebaseCallbacks.push(callback);
+  
+  if (isFirebaseLoading) return;
+  isFirebaseLoading = true;
+
   const s1 = document.createElement('script');
   s1.src = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`;
   document.head.appendChild(s1);
@@ -116,7 +125,8 @@ window.initFirebase = function(callback) {
           }
         });
         
-        if (callback) callback();
+        firebaseCallbacks.forEach(cb => cb());
+        firebaseCallbacks = [];
       }
     }
   }
@@ -616,12 +626,17 @@ window.buildNavbar = function(activePage){
   const nav = document.querySelector('nav.samurai-nav');
   if(!nav) return;
   const userDisplay = localStorage.getItem('samurai_active_email') || 'User';
-  const shortName = userDisplay.split('@')[0];
+  const shortName = localStorage.getItem('samurai_username') || userDisplay.split('@')[0];
   
   nav.innerHTML = `
     <div class="nav-top">
       <a class="nav-brand" href="index.html">⚔️ JLPT SAMURAI <span>侍</span></a>
-      ${window.CURRENT_USER ? `<div class="nav-user-chip" onclick="logout()" title="Click to logout">👤 ${shortName}</div>` : ''}
+      ${window.CURRENT_USER ? `<div class="nav-user-chip" id="nav-user-chip" style="cursor:pointer;position:relative;user-select:none;">👤 ${shortName} ▼
+        <div id="user-dropdown-menu" style="display:none; position:absolute; right:0; top:36px; background:var(--card); min-width:150px; border:1px solid var(--border); border-radius:4px; box-shadow:0 8px 16px rgba(0,0,0,0.5); z-index:1000; text-align:left;">
+          <a href="profile.html" style="display:block; padding:12px; color:var(--white); text-decoration:none; font-family:var(--font-body); font-size:14px; border-bottom:1px solid var(--border);">❤️‍🩹 Profile & Trophy Room</a>
+          <a href="#" onclick="logoutSamurai(); return false;" style="display:block; padding:12px; color:var(--red); text-decoration:none; font-family:var(--font-body); font-size:14px;">🚪 Log Out</a>
+        </div>
+      </div>` : ''}
     </div>
     <div class="nav-links">
       <a class="nav-link ${activePage==='home'?'active':''}" href="index.html">Home</a>
@@ -632,6 +647,38 @@ window.buildNavbar = function(activePage){
       <a class="nav-link ${activePage==='kana'?'active':''}" href="kana.html">Kana</a>
       <a class="nav-link ${activePage==='about'?'active':''}" href="about.html">About</a>
     </div>`;
+
+  // Toggle Dropdown logic
+  const chip = document.getElementById('nav-user-chip');
+  if(chip) {
+    chip.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const m = document.getElementById('user-dropdown-menu');
+      m.style.display = m.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    const m = document.getElementById('user-dropdown-menu');
+    if(m && m.style.display === 'block') m.style.display = 'none';
+  });
+};
+
+window.logoutSamurai = function() {
+  if (window.firebase && firebase.auth) {
+    firebase.auth().signOut().then(() => {
+      localStorage.removeItem('samurai_active_user');
+      window.location.href = 'auth.html';
+    }).catch(err => {
+      console.error('Logout error', err);
+      localStorage.removeItem('samurai_active_user');
+      window.location.href = 'auth.html';
+    });
+  } else {
+    localStorage.removeItem('samurai_active_user');
+    window.location.href = 'auth.html';
+  }
 };
 
 /* ═══ FOOTER BUILDER ═══ */

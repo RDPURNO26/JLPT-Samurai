@@ -33,6 +33,12 @@ body { display: flex; justify-content: center; align-items: center; min-height: 
     <input type="text" id="auth-user" class="auth-input" placeholder="Username or Email" required autocomplete="off">
     <input type="email" id="auth-email" class="auth-input" placeholder="Email Address" style="display:none;" autocomplete="off">
     <input type="password" id="auth-pass" class="auth-input" placeholder="Password" required>
+    <div style="text-align:left; margin-bottom:16px;">
+      <label style="color:var(--muted); font-size:13px; font-family:var(--font-mono); cursor:pointer;">
+        <input type="checkbox" id="auth-remember" style="margin-right:8px; accent-color:var(--red);">
+        Stay logged in
+      </label>
+    </div>
     <button type="submit" class="auth-btn" id="auth-submit">Login</button>
   </form>
   
@@ -82,6 +88,10 @@ async function handleAuth(e) {
 
   initFirebase(async () => {
     try {
+      const remember = document.getElementById('auth-remember').checked;
+      const persistence = remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+      await firebase.auth().setPersistence(persistence);
+
       if (mode === 'signup') {
         // 1. Check if username exists
         const usernameDoc = await firebase.firestore().collection('samurai_usernames').doc(u.toLowerCase()).get();

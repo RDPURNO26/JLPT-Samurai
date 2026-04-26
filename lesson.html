@@ -318,9 +318,13 @@ function initQuizUI(){
   // Check if flashcards done (unlock quiz)
   const type = params.get('type');
   if(!lsGet(`samurai_fc_done_${LESSON_ID}`) && type !== 'grand_vocab' && type !== 'weak_vocab'){
-    document.getElementById('quiz-setup').innerHTML = `<div class="quiz-setup">
-      <p style="color:var(--muted);font-size:14px;margin:40px 0">Complete flashcards first to unlock quiz ⚔️</p>
-      <button class="btn" onclick="showTab('flash');document.querySelectorAll('.tab-btn')[1].click()">Go to Flashcards →</button>
+    document.getElementById('quiz-setup').innerHTML = `<div class="quiz-setup" style="text-align:center;">
+      <h3 style="color:var(--gold);font-family:var(--font-head);letter-spacing:2px;margin-bottom:12px;">LESSON LOCKED</h3>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:24px">Complete flashcards first, OR take the Challenge. Score 85% or higher to unlock the lesson immediately!</p>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button class="btn" onclick="showTab('flash');document.querySelectorAll('.tab-btn')[1].click()">Go to Flashcards →</button>
+        <button class="btn btn-primary" onclick="startQuiz()" style="background:var(--red);color:#fff;border-color:var(--red);">⚔️ Challenge the Dojo</button>
+      </div>
     </div>`;
   }
 }
@@ -413,10 +417,17 @@ function showQuizResult(){
   const el = document.getElementById('quiz-result');
   el.style.display='block';
 
+  const type = params.get('type');
+  if (r.pct >= 85 && type !== 'grand_vocab' && type !== 'weak_vocab') {
+    lsSet(`samurai_fc_done_${LESSON_ID}`, true);
+    lsSet(`samurai_quiz_passed_${LESSON_ID}`, true);
+  }
+
   let html = `<div class="quiz-result">
     <div class="result-grade" style="color:${r.color}">${r.grade}</div>
     <div class="result-label">${r.pct}% CORRECT</div>
     <div class="result-msg">${r.msg}</div>
+    ${r.pct >= 85 && type !== 'grand_vocab' && type !== 'weak_vocab' ? '<div style="color:var(--gold);font-family:var(--font-head);letter-spacing:1px;margin:8px 0;animation:pulse 1s infinite;">🔓 LESSON UNLOCKED!</div>' : ''}
     <div class="result-grid">
       <div class="result-stat"><div class="result-stat-val" style="color:var(--green)">${r.score}</div><div class="result-stat-lbl">Correct</div></div>
       <div class="result-stat"><div class="result-stat-val" style="color:var(--red)">${r.total-r.score}</div><div class="result-stat-lbl">Wrong</div></div>
