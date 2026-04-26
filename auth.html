@@ -70,7 +70,7 @@ function handleAuth(e) {
       firebase.auth().createUserWithEmailAndPassword(u, p)
         .then((cred) => loginSuccess(cred.user.uid, u))
         .catch((error) => {
-          showError(error.message);
+          handleFirebaseError(error);
           btn.disabled = false;
           btn.textContent = 'Create Account';
         });
@@ -78,12 +78,25 @@ function handleAuth(e) {
       firebase.auth().signInWithEmailAndPassword(u, p)
         .then((cred) => loginSuccess(cred.user.uid, u))
         .catch((error) => {
-          showError(error.message);
+          handleFirebaseError(error);
           btn.disabled = false;
           btn.textContent = 'Login';
         });
     }
   });
+}
+
+function handleFirebaseError(error) {
+  let msg = error.message;
+  // Make obscure Firebase errors user-friendly
+  if (error.code === 'auth/invalid-login-credentials' || msg.includes('INVALID_LOGIN_CREDENTIALS') || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+    msg = "Incorrect email or password.";
+  } else if (error.code === 'auth/email-already-in-use') {
+    msg = "An account with this email already exists.";
+  } else if (error.code === 'auth/weak-password') {
+    msg = "Password is too weak. Please use at least 6 characters.";
+  }
+  showError(msg);
 }
 
 function showError(msg) {
@@ -100,6 +113,19 @@ function loginSuccess(uid, email) {
     window.location.href = 'index.html';
   }, 600);
 }
+
+// Auto-login if Firebase session is still active
+window.addEventListener('DOMContentLoaded', () => {
+  if (typeof initFirebase === 'function') {
+    initFirebase(() => {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          loginSuccess(user.uid, user.email);
+        }
+      });
+    });
+  }
+});
 </script>
 </body>
 </html>
