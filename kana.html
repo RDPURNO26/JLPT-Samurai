@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>JLPT Samurai — Kana Dojo</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+.kana-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; margin-bottom: 30px; }
+.kana-card { background: var(--card); border: 1px solid var(--border); padding: 15px 5px; text-align: center; cursor: pointer; transition: all 0.2s; border-radius: 4px;}
+.kana-card:hover { border-color: var(--red); transform: translateY(-3px); box-shadow: 0 4px 15px var(--red-glow); }
+.kana-char { font-size: 32px; color: var(--gold); font-weight: bold; line-height: 1; margin-bottom: 4px; }
+.kana-roma { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.kana-empty { visibility: hidden; }
+
+/* Panel styles specific to Kana */
+.kp-char.kana-huge { font-size: 150px; }
+</style>
+</head>
+<body>
+<div id="page-loader"><div class="logo">⚔️ JLPT SAMURAI</div><div class="bar"><div class="bar-fill"></div></div></div>
+<canvas id="sakura-canvas"></canvas>
+<nav class="samurai-nav"></nav>
+
+<div class="page-wrap" id="app">
+  <div class="page-title">KANA DOJO — 仮名</div>
+  <div class="page-sub">Master Hiragana and Katakana</div>
+  <div class="ink-divider"></div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="showTab('hiragana')">あ Hiragana</button>
+    <button class="tab-btn" onclick="showTab('katakana')">ア Katakana</button>
+    <button class="tab-btn" onclick="showTab('quiz')">⚡ Kana Quiz</button>
+  </div>
+
+  <!-- HIRAGANA -->
+  <div class="tab-panel active" id="tab-hiragana">
+    <h3 style="color:var(--white);margin: 20px 0 10px;">Basic Hiragana</h3>
+    <div class="kana-grid" id="hira-basic"></div>
+    <h3 style="color:var(--white);margin: 20px 0 10px;">Dakuten & Handakuten</h3>
+    <div class="kana-grid" id="hira-daku"></div>
+  </div>
+
+  <!-- KATAKANA -->
+  <div class="tab-panel" id="tab-katakana">
+    <h3 style="color:var(--white);margin: 20px 0 10px;">Basic Katakana</h3>
+    <div class="kana-grid" id="kata-basic"></div>
+    <h3 style="color:var(--white);margin: 20px 0 10px;">Dakuten & Handakuten</h3>
+    <div class="kana-grid" id="kata-daku"></div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="tab-panel" id="tab-quiz">
+    <div id="quiz-setup">
+      <div class="quiz-setup">
+        <p style="color:var(--muted);font-family:var(--font-mono);font-size:11px;margin-bottom:20px">Test your Kana speed and accuracy</p>
+        <div class="quiz-opts">
+          <div class="quiz-opt-group"><label>Kana Type</label>
+            <div class="radio-row" id="qt-type">
+              <span class="radio-chip sel" data-val="hiragana">Hiragana Only</span>
+              <span class="radio-chip" data-val="katakana">Katakana Only</span>
+              <span class="radio-chip" data-val="mixed">Mixed</span>
+            </div>
+          </div>
+          <div class="quiz-opt-group"><label>Questions</label>
+            <div class="radio-row" id="qc-row">
+              <span class="radio-chip" data-val="10">10</span>
+              <span class="radio-chip sel" data-val="20">20</span>
+              <span class="radio-chip" data-val="50">50</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="font-size:14px;padding:12px 36px" onclick="startKanaQuiz()">START QUIZ ⚔️</button>
+      </div>
+    </div>
+    <div id="quiz-active" style="display:none"></div>
+    <div id="quiz-result" style="display:none"></div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+<div class="kanji-panel" id="kanji-panel">
+  <button class="kp-close" onclick="closePanel()">✕</button>
+  <div class="kp-char kana-huge" id="kp-char">あ</div>
+  <div id="kp-details" style="font-size:14px;line-height:2"></div>
+</div>
+
+<footer class="samurai-footer"></footer>
+<script src="data-loader.js"></script>
+<script src="app.js"></script>
+<script>
+(function(){
+'use strict';
+
+const KANA_DATA = {
+  hiragana: [
+    {j:'あ', r:'a'}, {j:'い', r:'i'}, {j:'う', r:'u'}, {j:'え', r:'e'}, {j:'お', r:'o'},
+    {j:'か', r:'ka'}, {j:'き', r:'ki'}, {j:'く', r:'ku'}, {j:'け', r:'ke'}, {j:'こ', r:'ko'},
+    {j:'さ', r:'sa'}, {j:'し', r:'shi'}, {j:'す', r:'su'}, {j:'せ', r:'se'}, {j:'そ', r:'so'},
+    {j:'た', r:'ta'}, {j:'ち', r:'chi'}, {j:'つ', r:'tsu'}, {j:'て', r:'te'}, {j:'と', r:'to'},
+    {j:'な', r:'na'}, {j:'に', r:'ni'}, {j:'ぬ', r:'nu'}, {j:'ね', r:'ne'}, {j:'の', r:'no'},
+    {j:'は', r:'ha'}, {j:'ひ', r:'hi'}, {j:'ふ', r:'fu'}, {j:'へ', r:'he'}, {j:'ほ', r:'ho'},
+    {j:'ま', r:'ma'}, {j:'み', r:'mi'}, {j:'む', r:'mu'}, {j:'め', r:'me'}, {j:'も', r:'mo'},
+    {j:'や', r:'ya'}, null, {j:'ゆ', r:'yu'}, null, {j:'よ', r:'yo'},
+    {j:'ら', r:'ra'}, {j:'り', r:'ri'}, {j:'る', r:'ru'}, {j:'れ', r:'re'}, {j:'ろ', r:'ro'},
+    {j:'わ', r:'wa'}, null, null, null, {j:'を', r:'wo'},
+    {j:'ん', r:'n'}, null, null, null, null
+  ],
+  hiragana_daku: [
+    {j:'が', r:'ga'}, {j:'ぎ', r:'gi'}, {j:'ぐ', r:'gu'}, {j:'げ', r:'ge'}, {j:'ご', r:'go'},
+    {j:'ざ', r:'za'}, {j:'じ', r:'ji'}, {j:'ず', r:'zu'}, {j:'ぜ', r:'ze'}, {j:'ぞ', r:'zo'},
+    {j:'だ', r:'da'}, {j:'ぢ', r:'ji'}, {j:'づ', r:'zu'}, {j:'で', r:'de'}, {j:'ど', r:'do'},
+    {j:'ば', r:'ba'}, {j:'び', r:'bi'}, {j:'ぶ', r:'bu'}, {j:'べ', r:'be'}, {j:'ぼ', r:'bo'},
+    {j:'ぱ', r:'pa'}, {j:'ぴ', r:'pi'}, {j:'ぷ', r:'pu'}, {j:'ぺ', r:'pe'}, {j:'ぽ', r:'po'}
+  ],
+  katakana: [
+    {j:'ア', r:'a'}, {j:'イ', r:'i'}, {j:'ウ', r:'u'}, {j:'エ', r:'e'}, {j:'オ', r:'o'},
+    {j:'カ', r:'ka'}, {j:'キ', r:'ki'}, {j:'ク', r:'ku'}, {j:'ケ', r:'ke'}, {j:'コ', r:'ko'},
+    {j:'サ', r:'sa'}, {j:'シ', r:'shi'}, {j:'ス', r:'su'}, {j:'セ', r:'se'}, {j:'ソ', r:'so'},
+    {j:'タ', r:'ta'}, {j:'チ', r:'chi'}, {j:'ツ', r:'tsu'}, {j:'テ', r:'te'}, {j:'ト', r:'to'},
+    {j:'ナ', r:'na'}, {j:'ニ', r:'ni'}, {j:'ヌ', r:'nu'}, {j:'ネ', r:'ne'}, {j:'ノ', r:'no'},
+    {j:'ハ', r:'ha'}, {j:'ヒ', r:'hi'}, {j:'フ', r:'fu'}, {j:'ヘ', r:'he'}, {j:'ホ', r:'ho'},
+    {j:'マ', r:'ma'}, {j:'ミ', r:'mi'}, {j:'ム', r:'mu'}, {j:'メ', r:'me'}, {j:'モ', r:'mo'},
+    {j:'ヤ', r:'ya'}, null, {j:'ユ', r:'yu'}, null, {j:'ヨ', r:'yo'},
+    {j:'ラ', r:'ra'}, {j:'リ', r:'ri'}, {j:'ル', r:'ru'}, {j:'レ', r:'re'}, {j:'ロ', r:'ro'},
+    {j:'ワ', r:'wa'}, null, null, null, {j:'ヲ', r:'wo'},
+    {j:'ン', r:'n'}, null, null, null, null
+  ],
+  katakana_daku: [
+    {j:'ガ', r:'ga'}, {j:'ギ', r:'gi'}, {j:'グ', r:'gu'}, {j:'ゲ', r:'ge'}, {j:'ゴ', r:'go'},
+    {j:'ザ', r:'za'}, {j:'ジ', r:'ji'}, {j:'ズ', r:'zu'}, {j:'ゼ', r:'ze'}, {j:'ゾ', r:'zo'},
+    {j:'ダ', r:'da'}, {j:'ヂ', r:'ji'}, {j:'ヅ', r:'zu'}, {j:'デ', r:'de'}, {j:'ド', r:'do'},
+    {j:'バ', r:'ba'}, {j:'ビ', r:'bi'}, {j:'ブ', r:'bu'}, {j:'ベ', r:'be'}, {j:'ボ', r:'bo'},
+    {j:'パ', r:'pa'}, {j:'ピ', r:'pi'}, {j:'プ', r:'pu'}, {j:'ペ', r:'pe'}, {j:'ポ', r:'po'}
+  ]
+};
+
+let quiz = null;
+let timer = null;
+
+// Initialization
+buildNavbar('kana'); buildFooter(); initSakura(); hideLoader();
+renderKanaGrids();
+initQuizRadio();
+
+window.showTab = function(t){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  event.target.classList.add('active');
+};
+
+function renderKanaGrids() {
+  const buildHTML = (arr) => arr.map(k => {
+    if (!k) return `<div class="kana-empty"></div>`;
+    return `<div class="kana-card" onclick="openKanaPanel('${k.j}', '${k.r}')">
+      <div class="kana-char">${k.j}</div>
+      <div class="kana-roma">${k.r}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('hira-basic').innerHTML = buildHTML(KANA_DATA.hiragana);
+  document.getElementById('hira-daku').innerHTML = buildHTML(KANA_DATA.hiragana_daku);
+  document.getElementById('kata-basic').innerHTML = buildHTML(KANA_DATA.katakana);
+  document.getElementById('kata-daku').innerHTML = buildHTML(KANA_DATA.katakana_daku);
+}
+
+// Kana detail panel
+window.openKanaPanel = function(char, roma) {
+  document.getElementById('kp-char').textContent = char;
+  speak(char); // Auto pronounce
+  document.getElementById('kp-details').innerHTML = `
+    <div style="text-align:center;margin-bottom:12px">
+      <span style="color:var(--muted);font-family:var(--font-mono);font-size:12px;letter-spacing:2px">ROMAJI</span><br>
+      <span style="font-size:32px;color:var(--gold);font-weight:bold">${roma}</span>
+    </div>
+    <div style="text-align:center;margin-top:20px">
+      <button class="speak-btn" onclick="speak('${char}',this)" style="width:50px;height:50px;font-size:20px">🔊</button>
+    </div>
+    <div style="text-align:center;margin-top:30px">
+      <span style="color:var(--muted);font-size:12px">Stroke order animation unavailable for Kana in this version. Keep practicing writing!</span>
+    </div>
+  `;
+  document.getElementById('kanji-panel').classList.add('open');
+  document.getElementById('panel-overlay').classList.add('open');
+};
+
+window.closePanel = function(){
+  document.getElementById('kanji-panel').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('open');
+};
+
+/* ═══ KANA QUIZ ═══ */
+function initQuizRadio(){
+  document.querySelectorAll('.radio-chip').forEach(c=>{
+    c.addEventListener('click',function(){
+      this.closest('.radio-row').querySelectorAll('.radio-chip').forEach(x=>x.classList.remove('sel'));
+      this.classList.add('sel');
+    });
+  });
+}
+
+function getR(id){const c=document.querySelector('#'+id+' .radio-chip.sel');return c?c.dataset.val:null;}
+
+// We reuse SamuraiQuiz class by faking the "vocab" structure
+window.startKanaQuiz = function(){
+  const type = getR('qt-type') || 'mixed';
+  const count = getR('qc-row') || '20';
+  
+  let pool = [];
+  if (type === 'hiragana' || type === 'mixed') {
+    pool = pool.concat(KANA_DATA.hiragana.filter(x=>x), KANA_DATA.hiragana_daku.filter(x=>x));
+  }
+  if (type === 'katakana' || type === 'mixed') {
+    pool = pool.concat(KANA_DATA.katakana.filter(x=>x), KANA_DATA.katakana_daku.filter(x=>x));
+  }
+  
+  // Format to match what SamuraiQuiz expects (it expects objects with jp and roma)
+  const quizWords = pool.map((k, i) => ({
+    id: i,
+    jp: k.j,
+    roma: k.r,
+    bn: k.r // using bangla field as correct answer for JP->Romaji
+  }));
+
+  quiz = new SamuraiQuiz(quizWords, {type: 'jp_bn', count: count, lessonId: 999}); // We trick the engine
+  // Override prompt
+  quiz.questions.forEach(q => {
+    q.prompt = "What is the romaji for this Kana?";
+    q.displaySub = ""; // hide romaji hint
+  });
+
+  timer = startSessionTimer();
+  document.getElementById('quiz-setup').style.display='none';
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-active').style.display='block';
+  renderKQ();
+};
+
+function renderKQ(){
+  const q=quiz.current(), el=document.getElementById('quiz-active');
+  el.innerHTML=`<div style="max-width:640px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Q${quiz.idx+1}/${quiz.total()}</span>
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--green)">✓ ${quiz.score}</span>
+    </div>
+    <div class="qz-progress-bar"><div class="qz-prog-fill" style="width:${quiz.progress()}%"></div></div>
+    <div class="qz-question">
+      <div class="qz-prompt">${q.prompt}</div>
+      <div class="qz-word" style="font-size:70px;color:var(--gold);text-shadow:0 0 20px var(--gold-glow);">${q.display}</div>
+    </div>
+    <div class="qz-options" id="qz-opts">
+      ${q.opts.map((o,i)=>`<button class="qz-opt" onclick="kpick(this,'${o}')" style="animation-delay:${i*80}ms;font-size:24px;text-transform:lowercase;">${o}</button>`).join('')}
+    </div>
+    <div class="qz-feedback" id="qz-feedback"></div>
+    <div id="qz-next" style="display:none;text-align:center;margin-top:12px">
+      <button class="btn btn-primary" onclick="kNext()">Next →</button>
+    </div>
+  </div>`;
+  // Auto speak
+  speak(q.display);
+}
+
+window.kpick = function(btn, chosen){
+  if(quiz.answered) return;
+  const ok = quiz.answer(chosen);
+  document.querySelectorAll('.qz-opt').forEach(o=>{o.disabled=true;if(o.textContent===quiz.current().correct)o.classList.add('correct');});
+  if(ok){btn.classList.add('correct');slashAnimation();}
+  else{btn.classList.add('wrong');const fb=document.getElementById('qz-feedback');fb.textContent='Correct: '+quiz.current().correct;fb.classList.add('show');}
+  document.getElementById('qz-next').style.display='block';
+};
+
+window.kNext = function(){if(quiz.next())renderKQ();else showKResult();};
+
+function showKResult(){
+  if(timer){timer.stop();timer=null;}
+  const r=quiz.getResult();
+  document.getElementById('quiz-active').style.display='none';
+  const el=document.getElementById('quiz-result');el.style.display='block';
+  el.innerHTML=`<div class="quiz-result">
+    <div class="result-grade" style="color:${r.color}">${r.grade}</div>
+    <div class="result-label">${r.pct}% CORRECT</div>
+    <div class="result-msg">${r.msg}</div>
+    <div class="result-grid">
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--green)">${r.score}</div><div class="result-stat-lbl">Correct</div></div>
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--red)">${r.total-r.score}</div><div class="result-stat-lbl">Wrong</div></div>
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--gold)">${r.bestStreak}</div><div class="result-stat-lbl">Streak</div></div>
+    </div>
+    ${r.wrongs.length?'<div class="wrong-list"><h4>Review these:</h4>'+r.wrongs.map(q=>`<div class="wrong-item"><span class="wrong-jp" style="color:var(--red);font-size:24px">${q.w.jp}</span><span class="wrong-bn">${q.w.roma}</span></div>`).join('')+'</div>':''}
+    <div style="margin-top:20px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="startKanaQuiz()">↺ Retry</button>
+      <button class="btn" onclick="document.getElementById('quiz-result').style.display='none';document.getElementById('quiz-setup').style.display='block'">⚙ New</button>
+    </div></div>`;
+}
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JLPT Samurai — Lesson</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page-loader"><div class="logo">⚔️ JLPT SAMURAI</div><div class="bar"><div class="bar-fill"></div></div></div>
+<canvas id="sakura-canvas"></canvas>
+<nav class="samurai-nav"></nav>
+
+<div class="page-wrap" id="app">
+  <div class="page-title" id="lesson-title">Lesson</div>
+  <div class="page-sub" id="lesson-sub"></div>
+  <div class="ink-divider"></div>
+
+  <!-- TABS -->
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="showTab('list')">📋 Word List</button>
+    <button class="tab-btn" onclick="showTab('flash')">🃏 Flashcards</button>
+    <button class="tab-btn" onclick="showTab('quiz')" id="quiz-tab-btn">⚡ Quiz</button>
+  </div>
+
+  <!-- ═══ WORD LIST TAB ═══ -->
+  <div class="tab-panel active" id="tab-list">
+    <input type="text" class="search-bar" id="search" placeholder="🔍 Search Japanese, Romaji, or Bangla...">
+    <div id="word-list-container"></div>
+  </div>
+
+  <!-- ═══ FLASHCARD TAB ═══ -->
+  <div class="tab-panel" id="tab-flash">
+    <div class="chip-row" id="fc-filters">
+      <button class="chip active" data-f="all">All</button>
+      <button class="chip" data-f="hard">🔴 Hard</button>
+      <button class="chip" data-f="good">🟡 Good</button>
+      <button class="chip" data-f="easy">🟢 Easy</button>
+      <button class="chip" data-f="unseen">⬜ Unseen</button>
+    </div>
+    <div class="fc-controls">
+      <span class="fc-info" id="fc-info">Card 1</span>
+      <button class="btn" onclick="fcShuffle()">🔀 Shuffle</button>
+      <button class="btn" onclick="fcReset()">↺ Reset</button>
+    </div>
+    <div class="fc-progress"><div class="fc-fill" id="fc-fill"></div></div>
+    <div class="card-wrap" id="card-wrap">
+      <div class="card-inner" id="card-inner">
+        <div class="card-face card-front">
+          <div class="fc-jp" id="fc-jp">—</div>
+          <div class="fc-roma" id="fc-roma">—</div>
+          <button class="speak-btn" id="fc-speak" style="margin-top:12px">🔊</button>
+          <div class="fc-hint">— tap to flip —</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="fc-bn" id="fc-bn">—</div>
+          <div class="fc-roma" id="fc-roma2" style="margin-top:6px">—</div>
+          <div class="fc-mn" id="fc-mn"></div>
+          <div class="fc-ex" id="fc-ex"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-rating" id="fc-rating">
+      <button class="rate-btn again" onclick="fcRate('again')">🔴 Again</button>
+      <button class="rate-btn hard" onclick="fcRate('hard')">🟠 Hard</button>
+      <button class="rate-btn good" onclick="fcRate('good')">🟡 Good</button>
+      <button class="rate-btn easy" onclick="fcRate('easy')">🟢 Easy</button>
+    </div>
+    <div class="fc-nav" style="margin-top:14px">
+      <button class="btn" id="fc-prev" onclick="fcNav(-1)">← Prev</button>
+      <button class="btn btn-primary" onclick="fcFlip()">Flip</button>
+      <button class="btn" id="fc-next" onclick="fcNav(1)">Next →</button>
+    </div>
+    <div id="fc-summary" style="display:none;margin-top:24px"></div>
+  </div>
+
+  <!-- ═══ QUIZ TAB ═══ -->
+  <div class="tab-panel" id="tab-quiz">
+    <div id="quiz-setup">
+      <div class="quiz-setup">
+        <p style="color:var(--muted);font-family:var(--font-mono);font-size:11px;margin-bottom:20px">"Know your enemy." — Prepare for battle.</p>
+        <div class="quiz-opts">
+          <div class="quiz-opt-group"><label>Question Type</label>
+            <div class="radio-row" id="qt-row">
+              <span class="radio-chip sel" data-val="mixed">Mixed</span>
+              <span class="radio-chip" data-val="jp_bn">JP → BN</span>
+              <span class="radio-chip" data-val="bn_jp">BN → JP</span>
+              <span class="radio-chip" data-val="audio">🔊 Audio</span>
+              <span class="radio-chip" data-val="roma">JP → Romaji</span>
+            </div>
+          </div>
+          <div class="quiz-opt-group"><label>Word Pool</label>
+            <div class="radio-row" id="qp-row">
+              <span class="radio-chip sel" data-val="all">All Words</span>
+              <span class="radio-chip" data-val="hard">Hard Only</span>
+              <span class="radio-chip" data-val="unseen">Unseen</span>
+            </div>
+          </div>
+          <div class="quiz-opt-group"><label>Questions</label>
+            <div class="radio-row" id="qc-row">
+              <span class="radio-chip" data-val="10">10</span>
+              <span class="radio-chip sel" data-val="20">20</span>
+              <span class="radio-chip" data-val="30">30</span>
+              <span class="radio-chip" data-val="all">All</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="font-size:14px;padding:12px 36px;letter-spacing:3px" onclick="startQuiz()">START QUIZ ⚔️</button>
+      </div>
+    </div>
+    <div id="quiz-active" style="display:none"></div>
+    <div id="quiz-result" style="display:none"></div>
+  </div>
+</div>
+
+<footer class="samurai-footer"></footer>
+
+<script src="data-loader.js"></script>
+<script src="app.js"></script>
+<script>
+(function(){
+'use strict';
+
+const params = new URLSearchParams(window.location.search);
+const LESSON_ID = parseInt(params.get('id')) || 1;
+let WORDS = [];
+let fc = null; // flashcard engine
+let quiz = null; // quiz engine
+let timer = null;
+
+/* ═══ INIT ═══ */
+window.addEventListener('samurai-data-ready', init);
+loadSamuraiData();
+buildNavbar('n5');
+buildFooter();
+initSakura();
+hideLoader();
+
+function init(){
+  const data = window.SAMURAI_DATA;
+  WORDS = data.vocab[LESSON_ID] || [];
+  document.getElementById('lesson-title').textContent = `Lesson ${LESSON_ID} — The Dojo`;
+  document.getElementById('lesson-sub').textContent = `${WORDS.length} words · Click 🔊 for audio · Reveal romaji`;
+  document.title = `JLPT Samurai — Lesson ${LESSON_ID}`;
+  buildWordList(WORDS);
+  initFlashcards();
+  initQuizUI();
+}
+
+/* ═══ TAB SWITCHING ═══ */
+window.showTab = function(tab){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+  if(tab==='flash') renderFC();
+};
+
+/* ═══ WORD LIST ═══ */
+function buildWordList(words){
+  const c = document.getElementById('word-list-container');
+  if(!words.length){ c.innerHTML='<p style="color:var(--muted)">No words loaded for this lesson.</p>'; return; }
+  let html = `<table class="word-table"><thead><tr>
+    <th>#</th><th>Japanese</th><th class="roma-cell">Romaji</th><th>Bangla</th><th>🔊</th>
+  </tr></thead><tbody>`;
+  words.forEach((w,i)=>{
+    const mastery = getWordMastery('vocab', LESSON_ID, i);
+    const dot = MASTERY_ICONS[mastery] || '⚪';
+    const roma = w.roma || '—';
+    html += `<tr style="animation-delay:${i*20}ms">
+      <td class="num-cell">${dot} ${w.id||i+1}</td>
+      <td class="jp-cell">${esc(w.jp)}</td>
+      <td class="roma-cell"><span class="roma-box" onclick="revealRoma(this,'${esc(roma)}')" data-idx="${i}">
+        <span class="rb-eye">👁</span><span class="rb-txt">ROMAJI</span>
+      </span></td>
+      <td class="bn-cell">${esc(w.bn)}</td>
+      <td><button class="speak-btn" onclick="speak('${esc(w.jp)}',this)">🔊</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  c.innerHTML = html;
+}
+
+window.revealRoma = function(box, roma){
+  if(box.classList.contains('revealed')) return;
+  box.style.transform='scale(1.08)';
+  setTimeout(()=>{box.style.transform='';},200);
+  box.querySelector('.rb-eye').textContent='✓';
+  box.querySelector('.rb-txt').textContent=roma;
+  box.classList.add('revealed');
+};
+
+// Search
+document.getElementById('search').addEventListener('input', function(){
+  const q = this.value.toLowerCase();
+  const rows = document.querySelectorAll('.word-table tbody tr');
+  rows.forEach(r=>{
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+/* ═══ FLASHCARDS ═══ */
+function initFlashcards(){
+  fc = new SamuraiFlashcards(WORDS, {lessonId: LESSON_ID});
+  // Filter chips
+  document.querySelectorAll('#fc-filters .chip').forEach(chip=>{
+    chip.addEventListener('click', function(){
+      document.querySelectorAll('#fc-filters .chip').forEach(c=>c.classList.remove('active'));
+      this.classList.add('active');
+      fc.setFilter(this.dataset.f);
+      renderFC();
+    });
+  });
+  renderFC();
+}
+
+function renderFC(){
+  if(!fc || !fc.current()) return;
+  const w = fc.current();
+  document.getElementById('fc-jp').textContent = w.jp;
+  document.getElementById('fc-roma').textContent = w.roma || '—';
+  document.getElementById('fc-bn').textContent = w.bn;
+  document.getElementById('fc-roma2').textContent = w.roma || '';
+  document.getElementById('fc-mn').textContent = w.mnemonic || w.mn || '';
+  document.getElementById('fc-ex').textContent = w.example ? '💬 '+w.example : '';
+  document.getElementById('fc-info').textContent = `Card ${fc.idx+1} of ${fc.total()}`;
+  document.getElementById('fc-fill').style.width = fc.progress()+'%';
+  document.getElementById('card-inner').classList.remove('flipped');
+  document.getElementById('fc-rating').classList.remove('visible');
+  document.getElementById('fc-prev').disabled = fc.idx===0;
+  document.getElementById('fc-next').disabled = fc.idx>=fc.total()-1;
+  fc.flipped = false;
+  // Auto-play audio
+  speak(w.jp, document.getElementById('fc-speak'));
+}
+
+window.fcFlip = function(){
+  fc.flip();
+  document.getElementById('card-inner').classList.toggle('flipped', fc.flipped);
+  document.getElementById('fc-rating').classList.toggle('visible', fc.flipped);
+};
+window.fcNav = function(dir){ fc.nav(dir); renderFC(); };
+window.fcShuffle = function(){ fc.shuffle(); renderFC(); };
+window.fcReset = function(){ fc.idx=0; fc.flipped=false; renderFC(); };
+window.fcRate = function(r){
+  fc.rate(r);
+  if(fc.isComplete()) showFCSummary();
+  else renderFC();
+};
+
+document.getElementById('card-wrap').addEventListener('click', fcFlip);
+document.getElementById('fc-speak').addEventListener('click', function(e){
+  e.stopPropagation();
+  if(fc.current()) speak(fc.current().jp, this);
+});
+
+function showFCSummary(){
+  const s = fc.getSessionSummary();
+  const el = document.getElementById('fc-summary');
+  let html = `<div style="text-align:center;padding:20px">
+    <h3 style="font-family:var(--font-head);color:var(--gold);letter-spacing:2px">SESSION COMPLETE ⚔️</h3>
+    <div class="result-grid" style="max-width:400px;margin:16px auto">
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--white)">${s.reviewed}</div><div class="result-stat-lbl">Reviewed</div></div>
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--green)">${s.easy+s.good}</div><div class="result-stat-lbl">Mastered</div></div>
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--red)">${s.again+s.hard}</div><div class="result-stat-lbl">Needs Work</div></div>
+    </div>`;
+  if(s.hardWords.length){
+    html += `<div class="wrong-list" style="max-width:500px;margin:16px auto"><h4>Words to review:</h4>`;
+    s.hardWords.forEach(w=>{
+      html += `<div class="wrong-item"><span class="wrong-jp">${esc(w.jp)}</span><span class="wrong-bn">${esc(w.bn)}</span>
+        <button class="speak-btn" onclick="speak('${esc(w.jp)}',this)">🔊</button></div>`;
+    });
+    html += '</div>';
+  }
+  html += `<div style="margin-top:20px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="fcReset();document.getElementById('fc-summary').style.display='none'">Study Again</button>
+    <button class="btn" onclick="showTab('quiz');document.querySelectorAll('.tab-btn')[2].click()">Go to Quiz →</button>
+  </div></div>`;
+  el.innerHTML = html;
+  el.style.display = 'block';
+  // Mark flashcards complete for this lesson
+  lsSet(`samurai_fc_done_${LESSON_ID}`, 'true');
+}
+
+/* ═══ QUIZ ═══ */
+function initQuizUI(){
+  // Radio chips
+  document.querySelectorAll('.radio-chip').forEach(chip=>{
+    chip.addEventListener('click', function(){
+      this.closest('.radio-row').querySelectorAll('.radio-chip').forEach(c=>c.classList.remove('sel'));
+      this.classList.add('sel');
+    });
+  });
+  // Check if flashcards done (unlock quiz)
+  if(!lsGet(`samurai_fc_done_${LESSON_ID}`)){
+    document.getElementById('quiz-setup').innerHTML = `<div class="quiz-setup">
+      <p style="color:var(--muted);font-size:14px;margin:40px 0">Complete flashcards first to unlock quiz ⚔️</p>
+      <button class="btn" onclick="showTab('flash');document.querySelectorAll('.tab-btn')[1].click()">Go to Flashcards →</button>
+    </div>`;
+  }
+}
+
+function getRadio(id){
+  const c = document.querySelector('#'+id+' .radio-chip.sel');
+  return c ? c.dataset.val : null;
+}
+
+window.startQuiz = function(){
+  const type = getRadio('qt-row') || 'mixed';
+  const pool = getRadio('qp-row') || 'all';
+  const count = getRadio('qc-row') || '20';
+
+  let words = [...WORDS];
+  if(pool==='hard') words = words.filter((_,i)=>isWeakWord('vocab',LESSON_ID,i));
+  if(pool==='unseen') words = words.filter((_,i)=>!getWordRating('vocab',LESSON_ID,i));
+  if(!words.length){ alert('No words in selected pool!'); return; }
+
+  quiz = new SamuraiQuiz(words, {type, count, pool, lessonId: LESSON_ID});
+  timer = startSessionTimer();
+
+  document.getElementById('quiz-setup').style.display='none';
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-active').style.display='block';
+  renderQuestion();
+};
+
+function renderQuestion(){
+  const q = quiz.current();
+  const el = document.getElementById('quiz-active');
+  let displayHTML = '';
+  if(q.type==='audio'){
+    displayHTML = `<div style="font-size:56px;cursor:pointer" onclick="speak('${esc(q.w.jp)}')">🔊</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-top:4px">CLICK TO HEAR</div>`;
+    setTimeout(()=>speak(q.w.jp), 300);
+  } else {
+    displayHTML = `<div class="qz-word">${esc(q.display)}</div>`;
+    if(q.displaySub) displayHTML += `<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-top:4px">${esc(q.displaySub)}</div>`;
+  }
+
+  el.innerHTML = `<div style="max-width:640px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Q${quiz.idx+1}/${quiz.total()}</span>
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--green)">✓ ${quiz.score} correct</span>
+    </div>
+    <div class="qz-progress-bar"><div class="qz-prog-fill" style="width:${quiz.progress()}%"></div></div>
+    <div class="qz-question">
+      <div class="qz-prompt">${q.prompt}</div>
+      ${displayHTML}
+    </div>
+    <div class="qz-options" id="qz-opts">
+      ${q.opts.map((o,i)=>`<button class="qz-opt" onclick="pickAnswer(this,'${esc(o)}')" style="animation-delay:${i*80}ms">${esc(o)}</button>`).join('')}
+    </div>
+    <div class="qz-feedback" id="qz-feedback"></div>
+    <div id="qz-next" style="display:none;text-align:center;margin-top:12px">
+      <button class="btn btn-primary" onclick="nextQuestion()">Next →</button>
+    </div>
+  </div>`;
+}
+
+window.pickAnswer = function(btn, chosen){
+  if(quiz.answered) return;
+  const isCorrect = quiz.answer(chosen);
+  const opts = document.querySelectorAll('.qz-opt');
+  opts.forEach(o=>{ o.disabled=true; if(o.textContent===quiz.current().correct) o.classList.add('correct'); });
+
+  if(isCorrect){
+    btn.classList.add('correct');
+    slashAnimation();
+  } else {
+    btn.classList.add('wrong');
+    const q = quiz.current();
+    const fb = document.getElementById('qz-feedback');
+    fb.innerHTML = `<strong>Correct:</strong> ${esc(q.correct)}<br>${q.mnemonic?'💡 '+esc(q.mnemonic):''}`;
+    fb.classList.add('show');
+  }
+  document.getElementById('qz-next').style.display='block';
+};
+
+window.nextQuestion = function(){
+  if(quiz.next()) renderQuestion();
+  else showQuizResult();
+};
+
+function showQuizResult(){
+  if(timer){ timer.stop(); timer=null; }
+  const r = quiz.getResult();
+  document.getElementById('quiz-active').style.display='none';
+  const el = document.getElementById('quiz-result');
+  el.style.display='block';
+
+  let html = `<div class="quiz-result">
+    <div class="result-grade" style="color:${r.color}">${r.grade}</div>
+    <div class="result-label">${r.pct}% CORRECT</div>
+    <div class="result-msg">${r.msg}</div>
+    <div class="result-grid">
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--green)">${r.score}</div><div class="result-stat-lbl">Correct</div></div>
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--red)">${r.total-r.score}</div><div class="result-stat-lbl">Wrong</div></div>
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--gold)">${r.bestStreak}</div><div class="result-stat-lbl">Best Streak</div></div>
+    </div>
+    <div class="result-grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--white);font-size:18px">${Math.floor(r.elapsed/60)}m ${r.elapsed%60}s</div><div class="result-stat-lbl">Time</div></div>
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--white);font-size:18px">${r.avgTime}s</div><div class="result-stat-lbl">Avg/Question</div></div>
+    </div>`;
+
+  if(r.wrongs.length){
+    html += `<div class="wrong-list"><h4>Focus on these words:</h4>`;
+    r.wrongs.forEach(q=>{
+      html += `<div class="wrong-item">
+        <span class="wrong-jp">${esc(q.w.jp)}</span><span class="wrong-bn">${esc(q.w.bn)}</span>
+        <button class="speak-btn" onclick="speak('${esc(q.w.jp)}',this)">🔊</button></div>`;
+    });
+    html += '</div>';
+  }
+
+  html += `<div style="margin-top:24px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="retryQuiz()">↺ Retry</button>
+    <button class="btn" onclick="retryWrong()">🔴 Retry Wrong Only</button>
+    <button class="btn" onclick="resetQuiz()">⚙ New Quiz</button>
+  </div></div>`;
+  el.innerHTML = html;
+}
+
+window.retryQuiz = function(){
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-active').style.display='block';
+  quiz = new SamuraiQuiz(WORDS, {type:'mixed', count:'20', lessonId:LESSON_ID});
+  timer = startSessionTimer();
+  renderQuestion();
+};
+window.retryWrong = function(){
+  const wrongWords = quiz.getResult().wrongs.map(q=>q.w);
+  if(!wrongWords.length){ alert('No wrong answers!'); return; }
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-active').style.display='block';
+  quiz = new SamuraiQuiz(wrongWords, {type:'mixed', count:'all', lessonId:LESSON_ID});
+  timer = startSessionTimer();
+  renderQuestion();
+};
+window.resetQuiz = function(){
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-active').style.display='none';
+  document.getElementById('quiz-setup').style.display='block';
+};
+
+/* ═══ KEYBOARD SHORTCUTS ═══ */
+window.addEventListener('samurai-key', function(e){
+  const key = e.detail;
+  if(document.getElementById('tab-flash').classList.contains('active')){
+    if(key===' '||key==='Enter') fcFlip();
+    else if(key==='ArrowRight') fcNav(1);
+    else if(key==='ArrowLeft') fcNav(-1);
+    else if(key==='1') fcRate('again');
+    else if(key==='2') fcRate('hard');
+    else if(key==='3') fcRate('good');
+    else if(key==='4') fcRate('easy');
+  }
+});
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+})();
+</script>
+</body>
+</html>

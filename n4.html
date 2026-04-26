@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>JLPT Samurai — N4 Coming Soon</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page-loader"><div class="logo">⚔️ JLPT SAMURAI</div><div class="bar"><div class="bar-fill"></div></div></div>
+<canvas id="sakura-canvas"></canvas>
+<nav class="samurai-nav"></nav>
+<div class="page-wrap">
+  <div class="coming-soon">
+    <div class="cs-kanji">四</div>
+    <div class="cs-title">N4 DOJO</div>
+    <p class="cs-msg">This path is not yet open, Samurai.<br>N4 content is being forged. Return when you are ready.</p>
+    <div class="cs-timer" id="countdown"></div>
+    <a href="n5.html" class="btn btn-primary" style="margin-top:20px">← Return to N5</a>
+  </div>
+</div>
+<footer class="samurai-footer"></footer>
+<script src="app.js"></script>
+<script>
+buildNavbar('n4'); buildFooter(); initSakura(); hideLoader();
+const target = new Date('2026-10-01T00:00:00').getTime();
+setInterval(()=>{
+  const now = Date.now(), d = target - now;
+  if(d<=0){document.getElementById('countdown').textContent='The path is now open!';return;}
+  const days=Math.floor(d/86400000), hrs=Math.floor((d%86400000)/3600000), mins=Math.floor((d%3600000)/60000), secs=Math.floor((d%60000)/1000);
+  document.getElementById('countdown').textContent=`${days}d ${hrs}h ${mins}m ${secs}s`;
+},1000);
+</script>
+</body>
+</html>

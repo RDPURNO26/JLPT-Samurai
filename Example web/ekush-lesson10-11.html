@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAY MY NAME — Lesson 10 & 11</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a05;--surface:#0f0f08;--card:#141408;--border:#2a2a10;
+  --green:#a8e63d;--green2:#c5f54a;--yellow:#f5d800;--orange:#e87b1e;
+  --red:#cc2200;--muted:#5a5a38;--text:#d4d4a0;--text2:#8a8a60;
+  --nav-h:64px;--glow:rgba(168,230,61,.18);
+}
+html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;line-height:1.6}
+body{padding-top:var(--nav-h)}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:.4;pointer-events:none;z-index:0}
+
+nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(8,8,4,.97);border-bottom:2px solid #1e1e08;z-index:100;display:flex;align-items:center;padding:0 14px;gap:2px;backdrop-filter:blur(8px);overflow-x:auto}
+nav::-webkit-scrollbar{height:0}
+.nav-brand{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;margin-right:12px;white-space:nowrap;letter-spacing:2px;text-transform:uppercase;line-height:1.1;flex-shrink:0}
+.nav-brand .br{color:var(--green2);text-shadow:0 0 14px var(--green)}
+.nav-brand .ba{color:var(--yellow)}
+.nav-brand sub{font-size:8px;color:var(--muted);font-family:'DM Mono',monospace;display:block;letter-spacing:.5px;margin-top:1px;font-weight:400;text-transform:none}
+.nav-sep{width:1px;height:28px;background:#2a2a10;margin:0 4px;flex-shrink:0}
+.tab{padding:7px 11px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;transition:all .15s;white-space:nowrap;text-transform:uppercase;border-bottom:2px solid transparent;flex-shrink:0}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--green2);border-bottom:2px solid var(--green);text-shadow:0 0 8px var(--green)}
+.tab.l11.active{color:#ffd97d;border-bottom-color:var(--yellow);text-shadow:0 0 8px var(--yellow)}
+
+.page{display:none;min-height:calc(100vh - var(--nav-h));padding:28px 16px 60px;position:relative;z-index:1}
+.page.active{display:block}
+.container{max-width:940px;margin:0 auto}
+
+.page-title{font-family:'Oswald',sans-serif;font-size:clamp(22px,4vw,34px);color:var(--green2);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;text-shadow:0 0 20px var(--glow)}
+.page-title.l11{color:#ffd97d;text-shadow:0 0 20px rgba(255,217,125,.2)}
+.page-sub{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;margin-bottom:6px;letter-spacing:.5px}
+.bb-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--green),var(--yellow),var(--green),transparent);opacity:.25;margin:8px 0 22px}
+.bb-divider.l11{background:linear-gradient(90deg,transparent,var(--yellow),var(--orange),var(--yellow),transparent)}
+
+/* WORD LIST */
+.zone-section{margin-bottom:34px}
+.zone-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.zone-tag{font-family:'DM Mono',monospace;font-size:9px;background:var(--card);border:1px solid #2a2a10;color:var(--green);padding:3px 10px;letter-spacing:1px;text-transform:uppercase;flex-shrink:0}
+.zone-tag.l11{color:var(--yellow)}
+.zone-name{font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.zone-count{font-size:11px;color:var(--muted);margin-left:auto;font-family:'DM Mono',monospace;flex-shrink:0}
+.word-table{width:100%;border-collapse:collapse}
+.word-table th{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);letter-spacing:1px;background:rgba(0,0,0,.3);text-transform:uppercase}
+.word-table td{padding:13px 12px;border-bottom:1px solid rgba(42,42,16,.4);vertical-align:middle}
+.word-table tr:hover td{background:rgba(168,230,61,.02)}
+.word-table tr.unnumbered td{background:rgba(255,255,255,.01)}
+.word-table tr.unnumbered:hover td{background:rgba(168,230,61,.025)}
+.word-table tr:last-child td{border-bottom:none}
+.num-cell{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:36px;white-space:nowrap}
+.num-cell.dash{color:#2a2a18;font-size:14px}
+.jp-cell{font-size:clamp(17px,2.5vw,21px);font-weight:700;color:var(--yellow);text-shadow:0 0 8px rgba(245,216,0,.1)}
+.roma-cell{width:175px}
+.bn-cell{color:var(--text);font-size:15px;font-weight:500}
+.audio-cell{width:46px;text-align:center}
+
+/* ROMAJI BOX */
+.roma-box{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:7px 14px;border:2px solid #3c3c18;background:linear-gradient(135deg,#141408,#1a1a0c);border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:#7a7a48;transition:all .2s;user-select:none;min-width:110px;letter-spacing:.5px;box-shadow:inset 0 0 12px rgba(0,0,0,.5)}
+.roma-box:hover{border-color:var(--green);color:var(--green2);box-shadow:0 0 14px rgba(168,230,61,.22),inset 0 0 12px rgba(0,0,0,.4);transform:translateY(-1px)}
+.roma-box.revealed{border-color:#5c6c22;color:#d0ee80;background:linear-gradient(135deg,#1a1c08,#1e2010);cursor:default;box-shadow:0 0 10px rgba(168,230,61,.12)}
+.roma-box.revealed:hover{transform:none;border-color:#5c6c22}
+
+/* AUDIO BTN */
+.speak-btn{width:34px;height:34px;border-radius:50%;border:2px solid #2a2a10;background:var(--card);color:var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
+.speak-btn:hover{border-color:var(--green);background:rgba(168,230,61,.1);transform:scale(1.1);box-shadow:0 0 8px rgba(168,230,61,.2)}
+.speak-btn.playing{border-color:var(--green2);animation:pulse .5s ease infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+/* FLASHCARDS */
+.fc-filter-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.filter-chip{padding:5px 12px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.5px;transition:all .15s;text-transform:uppercase}
+.filter-chip.active{border-color:var(--green);color:var(--green2);background:rgba(168,230,61,.06)}
+.filter-chip.active.l11{border-color:var(--yellow);color:#ffd97d;background:rgba(245,216,0,.06)}
+.fc-controls{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.fc-info{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin-right:auto}
+.fc-progress{width:100%;height:3px;background:var(--border);margin-bottom:20px;overflow:hidden}
+.fc-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--yellow));transition:width .4s}
+.card-wrap{perspective:1000px;width:100%;max-width:580px;margin:0 auto 18px;height:285px;cursor:pointer}
+.card-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,0,.2,1)}
+.card-inner.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;background:var(--card);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;backface-visibility:hidden}
+.card-front{border-top:2px solid var(--green)}
+.card-back{transform:rotateY(180deg);border-top:2px solid var(--yellow)}
+.fc-jp{font-size:clamp(32px,5.5vw,52px);font-weight:900;color:var(--yellow);margin-bottom:6px;line-height:1;text-shadow:0 0 18px rgba(245,216,0,.16)}
+.fc-roma{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:10px;letter-spacing:2px}
+.fc-hint{font-size:10px;color:#2e2e16;margin-top:12px;font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase}
+.fc-bn{font-size:clamp(18px,3vw,25px);font-weight:700;color:var(--green2);margin-bottom:10px;text-shadow:0 0 12px var(--glow);text-align:center}
+.fc-mnemonic{font-size:12px;color:var(--text2);line-height:1.75;max-width:400px;border-left:3px solid var(--green);padding-left:12px;text-align:left}
+.fc-example{font-size:11px;color:var(--muted);margin-top:8px;font-style:italic;text-align:left;width:100%;max-width:400px}
+.fc-nav{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.icon-btn{padding:8px 16px;border:1px solid var(--border);background:var(--card);color:var(--text2);cursor:pointer;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;transition:all .15s;text-transform:uppercase}
+.icon-btn:hover{border-color:var(--green);color:var(--green2)}
+.icon-btn.primary{border-color:var(--green);color:var(--green2);background:rgba(168,230,61,.05)}
+.icon-btn.primary:hover{background:rgba(168,230,61,.12);box-shadow:0 0 10px rgba(168,230,61,.15)}
+.icon-btn.primary.l11{border-color:var(--yellow);color:#ffd97d;background:rgba(245,216,0,.05)}
+.icon-btn.primary.l11:hover{background:rgba(245,216,0,.12)}
+.icon-btn:disabled{opacity:.25;cursor:not-allowed}
+.fc-rating{display:none;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.fc-rating.visible{display:flex}
+.rate-btn{padding:8px 18px;border:1px solid var(--border);background:transparent;cursor:pointer;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;transition:all .15s;text-transform:uppercase}
+.rate-btn.easy{border-color:var(--green);color:var(--green)}.rate-btn.easy:hover{background:rgba(168,230,61,.1)}
+.rate-btn.ok{border-color:var(--yellow);color:var(--yellow)}.rate-btn.ok:hover{background:rgba(245,216,0,.1)}
+.rate-btn.hard{border-color:var(--red);color:var(--red)}.rate-btn.hard:hover{background:rgba(204,34,0,.1)}
+
+/* QUIZ */
+.quiz-setup{text-align:center;padding:28px 16px}
+.quiz-opts{display:flex;flex-direction:column;gap:14px;max-width:460px;margin:0 auto 24px;text-align:left}
+.quiz-opt-group label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:7px;letter-spacing:1px;text-transform:uppercase}
+.radio-row{display:flex;gap:6px;flex-wrap:wrap}
+.radio-chip{padding:6px 13px;border:1px solid var(--border);background:var(--card);color:var(--text2);cursor:pointer;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.5px;transition:all .15s;user-select:none;text-transform:uppercase}
+.radio-chip.sel{border-color:var(--green);color:var(--green2);background:rgba(168,230,61,.07)}
+.radio-chip.sel.l11{border-color:var(--yellow);color:#ffd97d;background:rgba(245,216,0,.07)}
+.radio-chip:hover:not(.sel){border-color:#3a3a18;color:var(--text)}
+.quiz-active{max-width:640px;margin:0 auto}
+.qz-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.qz-score{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.qz-progress-bar{width:100%;height:3px;background:var(--border);margin-bottom:20px;overflow:hidden}
+.qz-prog-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--yellow));transition:width .3s}
+.qz-question{background:var(--card);border:1px solid var(--border);border-top:2px solid var(--green);padding:22px;text-align:center;margin-bottom:14px}
+.qz-question.l11{border-top-color:var(--yellow)}
+.qz-prompt{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:12px;letter-spacing:1.5px;text-transform:uppercase}
+.qz-word{font-size:clamp(24px,5vw,44px);font-weight:900;color:var(--yellow);line-height:1.1;text-shadow:0 0 14px rgba(245,216,0,.14)}
+.qz-word-sub{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin-top:6px}
+.qz-audio-icon{font-size:46px;cursor:pointer;margin:4px 0;transition:transform .15s;display:inline-block}
+.qz-audio-icon:hover{transform:scale(1.12)}
+.qz-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.qz-opt{padding:14px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:clamp(11px,1.7vw,13px);font-family:'Noto Sans JP',sans-serif;transition:all .15s;text-align:center;line-height:1.5}
+.qz-opt:hover:not(:disabled){border-color:var(--green);color:var(--green2);background:rgba(168,230,61,.04)}
+.qz-opt.correct{border-color:var(--green)!important;background:rgba(168,230,61,.1)!important;color:var(--green2)!important}
+.qz-opt.wrong{border-color:var(--red)!important;background:rgba(204,34,0,.1)!important;color:#ff6644!important}
+.qz-opt:disabled{cursor:not-allowed}
+.qz-feedback{font-size:12px;color:var(--text2);line-height:1.8;margin:8px 0;padding:12px 14px;background:rgba(0,0,0,.3);border-left:3px solid var(--green);display:none;font-family:'DM Mono',monospace}
+.qz-feedback.show{display:block}
+.qz-next{display:none;text-align:center;margin-top:10px}
+.qz-next.show{display:block}
+
+/* CORRECT POPUP */
+.correct-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:#080804;border:2px solid var(--green);padding:20px 38px;z-index:999;text-align:center;pointer-events:none;transition:all .18s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 40px rgba(168,230,61,.3)}
+.correct-popup.show{transform:translate(-50%,-50%) scale(1)}
+.cp-line1{font-family:'Oswald',sans-serif;font-size:clamp(14px,2.5vw,19px);color:var(--green);letter-spacing:3px;text-transform:uppercase}
+.cp-line2{font-family:'Oswald',sans-serif;font-size:clamp(20px,3.5vw,32px);color:var(--yellow);letter-spacing:2px;font-weight:700;margin-top:4px;text-shadow:0 0 14px rgba(245,216,0,.4)}
+
+/* RESULT */
+.quiz-result{text-align:center;padding:28px 16px;max-width:540px;margin:0 auto}
+.result-grade{font-family:'Oswald',sans-serif;font-size:clamp(60px,12vw,90px);font-weight:700;line-height:1;letter-spacing:4px}
+.result-label{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;margin:4px 0 6px}
+.result-quote{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:18px;font-style:italic}
+.result-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:16px 0}
+.result-stat{background:var(--card);border:1px solid var(--border);padding:14px;text-align:center}
+.result-stat-val{font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:1px}
+.result-stat-lbl{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;letter-spacing:1px;text-transform:uppercase}
+.wrong-list{margin-top:20px;text-align:left}
+.wrong-list h4{font-family:'DM Mono',monospace;font-size:10px;color:var(--red);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
+.wrong-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card);border:1px solid rgba(204,34,0,.15);margin-bottom:6px}
+.wrong-jp{color:var(--yellow);font-weight:700;font-size:16px;min-width:130px}
+.wrong-bn{color:var(--text2);font-size:13px}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#2a2a10}
+@media(max-width:580px){.roma-cell{display:none}.word-table th:nth-child(3){display:none}.qz-options{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="correct-popup" id="correct-popup">
+  <div class="cp-line1">✓ &nbsp; You're</div>
+  <div class="cp-line2">GODDAMN RIGHT</div>
+</div>
+
+<nav>
+  <div class="nav-brand"><span class="br">BR</span><span class="ba">BA</span> 日本語<sub>Ekush Academy · L10 &amp; L11</sub></div>
+  <div class="nav-sep"></div>
+  <button class="tab active" onclick="showPage('l10-list',this,false)">📋 L10 Words</button>
+  <button class="tab" onclick="showPage('l10-flash',this,false)">🃏 L10 Cards</button>
+  <button class="tab" onclick="showPage('l10-quiz',this,false)">⚡ L10 Quiz</button>
+  <div class="nav-sep"></div>
+  <button class="tab l11" onclick="showPage('l11-list',this,true)">📋 L11 Words</button>
+  <button class="tab l11" onclick="showPage('l11-flash',this,true)">🃏 L11 Cards</button>
+  <button class="tab l11" onclick="showPage('l11-quiz',this,true)">⚡ L11 Quiz</button>
+</nav>
+
+<!-- L10 PAGES -->
+<div id="page-l10-list" class="page active"><div class="container">
+  <div class="page-title">Lesson 10 — The Product</div>
+  <div class="bb-divider"></div>
+  <div class="page-sub" id="l10-list-sub"></div>
+  <div id="wl10"></div>
+</div></div>
+
+<div id="page-l10-flash" class="page"><div class="container">
+  <div class="page-title">L10 — Study the Formula</div>
+  <div class="bb-divider"></div>
+  <div class="page-sub">Tap card to flip · Rate yourself · Master every word</div>
+  <div class="fc-filter-row" id="fc10-filters">
+    <button class="filter-chip active" onclick="setFilter(10,'all',this)">All</button>
+    <button class="filter-chip" onclick="setFilter(10,'hard',this)">🔴 Hard</button>
+    <button class="filter-chip" onclick="setFilter(10,'ok',this)">🟡 OK</button>
+    <button class="filter-chip" onclick="setFilter(10,'easy',this)">🟢 Easy</button>
+    <button class="filter-chip" onclick="setFilter(10,'unseen',this)">⬜ Unseen</button>
+  </div>
+  <div class="fc-controls">
+    <span class="fc-info" id="fc10-info">Card 1</span>
+    <button class="icon-btn" onclick="fcShuffle(10)">🔀 Shuffle</button>
+    <button class="icon-btn" onclick="fcReset(10)">↺ Reset</button>
+  </div>
+  <div class="fc-progress"><div class="fc-fill" id="fc10-fill" style="width:0%"></div></div>
+  <div class="card-wrap" onclick="flipCard(10)">
+    <div class="card-inner" id="ci10">
+      <div class="card-face card-front">
+        <div class="fc-jp" id="fc10-jp">—</div>
+        <div class="fc-roma" id="fc10-roma">—</div>
+        <button class="speak-btn" id="fc10-speak" onclick="event.stopPropagation();speakFC(10)" style="margin-top:10px">🔊</button>
+        <div class="fc-hint">— tap to flip —</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="fc-bn" id="fc10-bn">—</div>
+        <div class="fc-mnemonic" id="fc10-mn"></div>
+        <div class="fc-example" id="fc10-ex"></div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-rating" id="fc10-rating">
+    <button class="rate-btn hard" onclick="rateCard(10,'hard')">🔴 Hard</button>
+    <button class="rate-btn ok" onclick="rateCard(10,'ok')">🟡 OK</button>
+    <button class="rate-btn easy" onclick="rateCard(10,'easy')">🟢 Easy</button>
+  </div>
+  <div class="fc-nav" style="margin-top:12px">
+    <button class="icon-btn" id="fc10-prev" onclick="fcNav(10,-1)">← Prev</button>
+    <button class="icon-btn primary" onclick="flipCard(10)">Flip</button>
+    <button class="icon-btn" id="fc10-next" onclick="fcNav(10,1)">Next →</button>
+  </div>
+  <div style="margin-top:18px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">
+    🔴 Hard:<span id="cnt10-hard" style="color:#cc4444;margin-left:3px">0</span>&nbsp;
+    🟡 OK:<span id="cnt10-ok" style="color:var(--yellow);margin-left:3px">0</span>&nbsp;
+    🟢 Easy:<span id="cnt10-easy" style="color:var(--green);margin-left:3px">0</span>
+  </div>
+</div></div>
+
+<div id="page-l10-quiz" class="page"><div class="container">
+  <div id="l10-setup-view" class="quiz-setup">
+    <div class="page-title">L10 — Say My Name</div>
+    <div class="bb-divider"></div>
+    <p style="color:var(--muted);font-size:11px;font-family:'DM Mono',monospace;margin-bottom:22px">"You know who I am." — Now prove it.</p>
+    <div class="quiz-opts">
+      <div class="quiz-opt-group"><label>Question Type</label>
+        <div class="radio-row" id="qt10">
+          <span class="radio-chip sel" data-val="mixed">Mixed</span>
+          <span class="radio-chip" data-val="jp_bn">JP → BN</span>
+          <span class="radio-chip" data-val="bn_jp">BN → JP</span>
+          <span class="radio-chip" data-val="audio">🔊 Audio</span>
+          <span class="radio-chip" data-val="roma">JP → Romaji</span>
+        </div>
+      </div>
+      <div class="quiz-opt-group"><label>Zone Pool</label>
+        <div class="radio-row" id="qp10">
+          <span class="radio-chip sel" data-val="all">All</span>
+          <span class="radio-chip" data-val="hard">Hard Only</span>
+          <span class="radio-chip" data-val="z0">Z1</span>
+          <span class="radio-chip" data-val="z1">Z2</span>
+          <span class="radio-chip" data-val="z2">Z3</span>
+          <span class="radio-chip" data-val="z3">Z4</span>
+          <span class="radio-chip" data-val="z4">Z5</span>
+        </div>
+      </div>
+      <div class="quiz-opt-group"><label>Questions</label>
+        <div class="radio-row" id="qc10">
+          <span class="radio-chip" data-val="10">10</span>
+          <span class="radio-chip sel" data-val="20">20</span>
+          <span class="radio-chip" data-val="30">30</span>
+          <span class="radio-chip" data-val="all">All</span>
+        </div>
+      </div>
+    </div>
+    <button class="icon-btn primary" style="margin:0 auto;font-size:14px;padding:10px 32px;letter-spacing:2px" onclick="startQuiz(10)">COOK →</button>
+  </div>
+  <div id="l10-active-view" style="display:none"><div class="quiz-active" id="l10-qbody"></div></div>
+  <div id="l10-result-view" style="display:none"><div class="quiz-result" id="l10-rbody"></div></div>
+</div></div>
+
+<!-- L11 PAGES -->
+<div id="page-l11-list" class="page"><div class="container">
+  <div class="page-title l11">Lesson 11 — The Formula</div>
+  <div class="bb-divider l11"></div>
+  <div class="page-sub" id="l11-list-sub"></div>
+  <div id="wl11"></div>
+</div></div>
+
+<div id="page-l11-flash" class="page"><div class="container">
+  <div class="page-title l11">L11 — Cook the Cards</div>
+  <div class="bb-divider l11"></div>
+  <div class="page-sub">Flip the card · Rate yourself · No half measures</div>
+  <div class="fc-filter-row" id="fc11-filters">
+    <button class="filter-chip active" onclick="setFilter(11,'all',this)">All</button>
+    <button class="filter-chip" onclick="setFilter(11,'hard',this)">🔴 Hard</button>
+    <button class="filter-chip" onclick="setFilter(11,'ok',this)">🟡 OK</button>
+    <button class="filter-chip" onclick="setFilter(11,'easy',this)">🟢 Easy</button>
+    <button class="filter-chip" onclick="setFilter(11,'unseen',this)">⬜ Unseen</button>
+  </div>
+  <div class="fc-controls">
+    <span class="fc-info" id="fc11-info">Card 1</span>
+    <button class="icon-btn" onclick="fcShuffle(11)">🔀 Shuffle</button>
+    <button class="icon-btn" onclick="fcReset(11)">↺ Reset</button>
+  </div>
+  <div class="fc-progress"><div class="fc-fill" id="fc11-fill" style="width:0%"></div></div>
+  <div class="card-wrap" onclick="flipCard(11)">
+    <div class="card-inner" id="ci11">
+      <div class="card-face card-front" style="border-top-color:var(--yellow)">
+        <div class="fc-jp" id="fc11-jp">—</div>
+        <div class="fc-roma" id="fc11-roma">—</div>
+        <button class="speak-btn" id="fc11-speak" onclick="event.stopPropagation();speakFC(11)" style="margin-top:10px">🔊</button>
+        <div class="fc-hint">— tap to flip —</div>
+      </div>
+      <div class="card-face card-back" style="border-top-color:var(--green)">
+        <div class="fc-bn" id="fc11-bn">—</div>
+        <div class="fc-mnemonic" id="fc11-mn"></div>
+        <div class="fc-example" id="fc11-ex"></div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-rating" id="fc11-rating">
+    <button class="rate-btn hard" onclick="rateCard(11,'hard')">🔴 Hard</button>
+    <button class="rate-btn ok" onclick="rateCard(11,'ok')">🟡 OK</button>
+    <button class="rate-btn easy" onclick="rateCard(11,'easy')">🟢 Easy</button>
+  </div>
+  <div class="fc-nav" style="margin-top:12px">
+    <button class="icon-btn" id="fc11-prev" onclick="fcNav(11,-1)">← Prev</button>
+    <button class="icon-btn primary l11" onclick="flipCard(11)">Flip</button>
+    <button class="icon-btn" id="fc11-next" onclick="fcNav(11,1)">Next →</button>
+  </div>
+  <div style="margin-top:18px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">
+    🔴 Hard:<span id="cnt11-hard" style="color:#cc4444;margin-left:3px">0</span>&nbsp;
+    🟡 OK:<span id="cnt11-ok" style="color:var(--yellow);margin-left:3px">0</span>&nbsp;
+    🟢 Easy:<span id="cnt11-easy" style="color:var(--green);margin-left:3px">0</span>
+  </div>
+</div></div>
+
+<div id="page-l11-quiz" class="page"><div class="container">
+  <div id="l11-setup-view" class="quiz-setup">
+    <div class="page-title l11">L11 — Say My Name</div>
+    <div class="bb-divider l11"></div>
+    <p style="color:var(--muted);font-size:11px;font-family:'DM Mono',monospace;margin-bottom:22px">"No half measures, Walter." — Know every word.</p>
+    <div class="quiz-opts">
+      <div class="quiz-opt-group"><label>Question Type</label>
+        <div class="radio-row" id="qt11">
+          <span class="radio-chip sel" data-val="mixed">Mixed</span>
+          <span class="radio-chip" data-val="jp_bn">JP → BN</span>
+          <span class="radio-chip" data-val="bn_jp">BN → JP</span>
+          <span class="radio-chip" data-val="audio">🔊 Audio</span>
+          <span class="radio-chip" data-val="roma">JP → Romaji</span>
+        </div>
+      </div>
+      <div class="quiz-opt-group"><label>Zone Pool</label>
+        <div class="radio-row" id="qp11">
+          <span class="radio-chip sel" data-val="all">All</span>
+          <span class="radio-chip" data-val="hard">Hard Only</span>
+          <span class="radio-chip" data-val="z0">Z1</span>
+          <span class="radio-chip" data-val="z1">Z2</span>
+          <span class="radio-chip" data-val="z2">Z3</span>
+          <span class="radio-chip" data-val="z3">Z4</span>
+          <span class="radio-chip" data-val="z4">Z5</span>
+        </div>
+      </div>
+      <div class="quiz-opt-group"><label>Questions</label>
+        <div class="radio-row" id="qc11">
+          <span class="radio-chip" data-val="10">10</span>
+          <span class="radio-chip sel" data-val="20">20</span>
+          <span class="radio-chip" data-val="30">30</span>
+          <span class="radio-chip" data-val="all">All</span>
+        </div>
+      </div>
+    </div>
+    <button class="icon-btn primary l11" style="margin:0 auto;font-size:14px;padding:10px 32px;letter-spacing:2px" onclick="startQuiz(11)">COOK →</button>
+  </div>
+  <div id="l11-active-view" style="display:none"><div class="quiz-active" id="l11-qbody"></div></div>
+  <div id="l11-result-view" style="display:none"><div class="quiz-result" id="l11-rbody"></div></div>
+</div></div>
+
+<script>
+// ============================================================
+// LESSON 10 DATA
+// num: serial number from book ('—' = no number in book)
+// zone: 0-4
+// ============================================================
+const L10=[
+// Zone 0 — Existence & Basics
+{num:'1', jp:'います',roma:'imasu',bn:'আছে (জীবের বেলায়)',zone:0,mn:'ইমাস > ইমাছ আছে — জীবন্ত জিনিসের জন্য',ex:'ねこがいます — বিড়াল আছে'},
+{num:'2', jp:'あります',roma:'arimasu',bn:'আছে (বস্তুর বেলায়)',zone:0,mn:'আরি আছে — নির্জীব বস্তুর জন্য',ex:'ほんがあります — বই আছে'},
+{num:'3', jp:'いろいろ「な」',roma:'iroiro [na]',bn:'বিভিন্ন',zone:0,mn:'ইরো-ইরো = variety variety! বিভিন্ন',ex:'いろいろなたべものがあります — বিভিন্ন খাবার আছে'},
+// Zone 1 — People & Animals
+{num:'4', jp:'おとこのひと',roma:'otoko no hito',bn:'পুরুষ মানুষ/ পুরুষ',zone:1,mn:'ওতোকো = পুরুষ, হিতো = মানুষ',ex:'おとこのひとがいます — পুরুষ মানুষ আছে'},
+{num:'5', jp:'おんなのひと',roma:'onna no hito',bn:'মহিলা মানুষ/ মহিলা',zone:1,mn:'ওন্না = মহিলা, হিতো = মানুষ',ex:'おんなのひとがいます — মহিলা মানুষ আছে'},
+{num:'6', jp:'おとこのこ',roma:'otoko no ko',bn:'পুরুষ বাচ্চা',zone:1,mn:'ওতোকো = পুরুষ, কো = বাচ্চা',ex:'おとこのこがいます — পুরুষ বাচ্চা আছে'},
+{num:'7', jp:'おんなのこ',roma:'onna no ko',bn:'মেয়ে বাচ্চা',zone:1,mn:'ওন্না = মেয়ে, কো = বাচ্চা',ex:'おんなのこがいます — মেয়ে বাচ্চা আছে'},
+{num:'8', jp:'いぬ',roma:'inu',bn:'কুকুর',zone:1,mn:'ইনু — ইনু কুকুর!',ex:'いぬがいます — কুকুর আছে'},
+{num:'9', jp:'ねこ',roma:'neko',bn:'বিড়াল',zone:1,mn:'নেকো — নেকো বিড়াল!',ex:'ねこがいます — বিড়াল আছে'},
+// Zone 2 — Objects & Household
+{num:'10', jp:'き',roma:'ki',bn:'গাছ',zone:2,mn:'কি গাছ? Ki = tree/গাছ',ex:'きがあります — গাছ আছে'},
+{num:'11', jp:'もの',roma:'mono',bn:'বস্তু',zone:2,mn:'মোনো = জিনিস/বস্তু',ex:'いろいろなものがあります — বিভিন্ন জিনিস আছে'},
+{num:'12', jp:'フィルム',roma:'firumu',bn:'ফিল্ম',zone:2,mn:'ফিরুমু = Film!',ex:'フィルムがあります — ফিল্ম আছে'},
+{num:'13', jp:'でんち',roma:'denchi',bn:'ব্যাটারি',zone:2,mn:'দেনচি = battery। でん(電)=electricity',ex:'でんちがあります — ব্যাটারি আছে'},
+{num:'14', jp:'はこ',roma:'hako',bn:'বাক্স',zone:2,mn:'হাকো = box/বাক্স',ex:'はこがあります — বাক্স আছে'},
+{num:'15', jp:'スイッチ',roma:'suicchi',bn:'সুইচ',zone:2,mn:'সুইচ্চি = Switch!',ex:'スイッチがあります — সুইচ আছে'},
+{num:'16', jp:'れいぞうこ',roma:'reizouko',bn:'ফ্রিজ',zone:2,mn:'রেই-জো-কো = 冷蔵庫 (refrigerator)',ex:'れいぞうこがあります — ফ্রিজ আছে'},
+{num:'17', jp:'テーブル',roma:'te-buru',bn:'টেবিল',zone:2,mn:'তে-বুরু = Table!',ex:'テーブルがあります — টেবিল আছে'},
+{num:'18', jp:'ベッド',roma:'beddo',bn:'বেড',zone:2,mn:'বেদ্দো = Bed!',ex:'ベッドがあります — বেড আছে'},
+{num:'19', jp:'たな',roma:'tana',bn:'তাক',zone:2,mn:'তানা = তাক। তানা-তানি না, সরাসরি তাক।',ex:'たながあります — তাক আছে'},
+{num:'20', jp:'ドア',roma:'doa',bn:'দরজা',zone:2,mn:'দোয়া = Door!',ex:'ドアがあります — দরজা আছে'},
+{num:'—', jp:'しまります[ドアが-]',roma:'shimarimasu [doa ga-]',bn:'বন্ধ হওয়া/ (a door) close, shut',zone:2,mn:'শিমারিমাস = নিজে বন্ধ হওয়া (intransitive)',ex:'ドアがしまります — দরজা বন্ধ হয়'},
+{num:'—', jp:'しめます',roma:'shimemasu',bn:'বন্ধ করা',zone:2,mn:'শিমেমাস = বন্ধ করা (transitive)',ex:'ドアをしめます — দরজা বন্ধ করি'},
+// Zone 3 — Places & Buildings
+{num:'21', jp:'まど',roma:'mado',bn:'জানালা',zone:3,mn:'মাদো = window/জানালা। মাদো মাদো তাকাও!',ex:'まどがあります — জানালা আছে'},
+{num:'22', jp:'ポスト',roma:'posuto',bn:'পোস্ট বক্স',zone:3,mn:'পোসুতো = Post (box)!',ex:'ポストがあります — পোস্ট বক্স আছে'},
+{num:'23', jp:'ビル',roma:'biru',bn:'বিল্ডিং',zone:3,mn:'বিরু = Building! (ビール=beer আলাদা!)',ex:'ビルがあります — বিল্ডিং আছে'},
+{num:'—', jp:'ビール',roma:'bi-ru',bn:'বিয়ার',zone:3,mn:'বি-রু = Beer! ビル(building) থেকে আলাদা',ex:'ビールがあります — বিয়ার আছে'},
+{num:'24', jp:'こうえん',roma:'kouen',bn:'পার্ক',zone:3,mn:'কো-উ-এন = Park/পার্ক',ex:'こうえんがあります — পার্ক আছে'},
+{num:'25', jp:'きっさてん',roma:'kissaten',bn:'কফি শপ',zone:3,mn:'কিছ্ছাতেন = coffee shop/কফি শপ',ex:'きっさてんがあります — কফি শপ আছে'},
+{num:'26', jp:'ほんや',roma:'hon\'ya',bn:'বইয়ের দোকান',zone:3,mn:'হোন=বই, ইয়া=দোকান। বইয়ের দোকান!',ex:'ほんやがあります — বইয়ের দোকান আছে'},
+{num:'27', jp:'-や',roma:'-ya',bn:'দোকান/স্টোর',zone:3,mn:'-ইয়া suffix = দোকান/স্টোর',ex:'パンや = bread shop, さかなや = fish shop'},
+{num:'28', jp:'のりば',roma:'noriba',bn:'স্টেশন',zone:3,mn:'নোরিবা = নোরিং (boarding) স্থান = স্টেশন',ex:'のりばがあります — স্টেশন আছে'},
+{num:'29', jp:'けん',roma:'ken',bn:'জেলা/প্রিফেকচার(বিভাগ)',zone:3,mn:'কেন জেলা = Prefecture/District',ex:'とうきょうけん — টোকিও প্রিফেকচার'},
+// Zone 4 — Directions, Positions & Extra
+{num:'30', jp:'うえ',roma:'ue',bn:'উপর',zone:4,mn:'উয়ে = উপরে। উয়ে মানে উপরে!',ex:'テーブルのうえにあります — টেবিলের উপরে আছে'},
+{num:'31', jp:'した',roma:'shita',bn:'নিচ',zone:4,mn:'শিতা = নিচ। Under/below',ex:'テーブルのしたにあります — টেবিলের নিচে আছে'},
+{num:'32', jp:'まえ',roma:'mae',bn:'সামনে',zone:4,mn:'মায়ে = সামনে। Mae = before/front',ex:'えきのまえにあります — স্টেশনের সামনে আছে'},
+{num:'33', jp:'うしろ',roma:'ushiro',bn:'পিছন',zone:4,mn:'উশিরো = পিছন। Behind',ex:'いえのうしろにあります — বাড়ির পিছনে আছে'},
+{num:'34', jp:'みぎ',roma:'migi',bn:'ডানদিক',zone:4,mn:'মিগি = ডান। Right side',ex:'みぎにあります — ডানদিকে আছে'},
+{num:'35', jp:'ひだり',roma:'hidari',bn:'বাম দিক',zone:4,mn:'হিদারি = বাম। Left side',ex:'ひだりにあります — বামদিকে আছে'},
+{num:'36', jp:'なか',roma:'naka',bn:'ভিতর',zone:4,mn:'নাকা = ভিতর। Inside/middle',ex:'はこのなかにあります — বাক্সের ভিতরে আছে'},
+{num:'37', jp:'そと',roma:'soto',bn:'বাহির',zone:4,mn:'সোতো = বাহির। তো! নারির পাশে বাহিরে',ex:'そとにあります — বাইরে আছে'},
+{num:'38', jp:'となり',roma:'tonari',bn:'পাশ/ side',zone:4,mn:'তোনারি = পাশে। Next to',ex:'となりにあります — পাশে আছে'},
+{num:'—', jp:'よこ/そば/となり',roma:'yoko/soba/tonari',bn:'পাশ/পাশাপাশি/ side  [JLPT N5]',zone:4,mn:'তিনটিই "পাশে" মানে। JLPT N5-এ আসে',ex:'よこにいます — পাশে আছে (beside)'},
+{num:'39', jp:'ちかく',roma:'chikaku',bn:'নিকট',zone:4,mn:'চিকাকু = নিকট/কাছে। Near/nearby',ex:'えきのちかくにあります — স্টেশনের কাছে আছে'},
+{num:'40', jp:'あいだ',roma:'aida',bn:'মধ্য',zone:4,mn:'আইদা = মধ্যে। Between',ex:'ぎんこうとゆうびんきょくのあいだにあります — ব্যাংক ও পোস্ট অফিসের মধ্যে'},
+{num:'41', jp:'-や-「など」',roma:'-ya-[nado]',bn:'-এবং (ইত্যাদি)',zone:4,mn:'নাদো = ইত্যাদি। "など" means "and so on / etc."',ex:'ほんやざっしなど — বই, ম্যাগাজিন ইত্যাদি'},
+{num:'42', jp:'いちばん-',roma:'ichiban-',bn:'সবচেয়ে',zone:4,mn:'ইচিবান = সবচেয়ে/number one! Ichiban best!',ex:'いちばんたかい — সবচেয়ে উঁচু'},
+{num:'43', jp:'-だんめ',roma:'-danme',bn:'-তম',zone:4,mn:'-দানমে = ordinal suffix। ১ম, ২য়, ৩য়...',ex:'いちだんめ — ১ম তলা'},
+{num:'—', jp:'パンダ',roma:'panda',bn:'পান্ডা (এক প্রকার প্রাণী)',zone:4,mn:'পান্ডা = Panda! সরাসরি ইংরেজি থেকে',ex:'パンダがいます — পান্ডা আছে'},
+{num:'—', jp:'ぞう',roma:'zou',bn:'হাতি',zone:4,mn:'জো-উ = হাতি। Zoo-তে হাতি থাকে!',ex:'ぞうがいます — হাতি আছে'},
+{num:'—', jp:'ATM',roma:'ATM',bn:'ATM (এটিএম মেশিন)',zone:4,mn:'ATM = ATM! সরাসরি ইংরেজি',ex:'ATMがあります — এটিএম আছে'},
+{num:'—', jp:'コンビニ',roma:'konbini',bn:'কনভেনি স্টোর/ Convenience Store (এক প্রকার দোকান, ২৪ ঘন্টা খোলা থাকে)',zone:4,mn:'কনবিনি = Convenience store। ২৪ ঘন্টা খোলা!',ex:'コンビニがあります — কনভেনি স্টোর আছে'},
+{num:'—', jp:'コーナー',roma:'ko-na-',bn:'কর্ণার/ সেকশন',zone:4,mn:'কো-না- = Corner/Section',ex:'スパイスコーナー — স্পাইস সেকশন'},
+{num:'—', jp:'いちばん した',roma:'ichiban shita',bn:'সবচেয়ে নিচে',zone:4,mn:'ইচিবান(সবচেয়ে) + শিতা(নিচ) = সবচেয়ে নিচে',ex:'いちばんしたにあります — সবচেয়ে নিচে আছে'},
+{num:'44', jp:'「どうも」すみません',roma:'[doumo] sumimasen',bn:'বিরক্ত করলাম, ধন্যবাদ',zone:4,mn:'দোউমো স্যুমিমাসেন = excuse me + thank you combined',ex:'「どうも」すみません、ちょっといいですか — একটু বিরক্ত করব?'},
+{num:'45', jp:'チリソース',roma:'chiri so-su',bn:'চিলি সস',zone:4,mn:'চিরি-সো-স = Chili Sauce!',ex:'チリソースがあります — চিলি সস আছে'},
+{num:'46', jp:'おく',roma:'oku',bn:'পিছনে',zone:4,mn:'ওকু = পিছনে। অন্যর বউ = কাছে, নিজের বউ = পিছনে (মজার mnemonic!)',ex:'おくにあります — পিছনে আছে'},
+{num:'47', jp:'スパイス コーナー',roma:'supaisu ko-na-',bn:'স্পাইস কর্ণার / মাশলার কর্ণার',zone:4,mn:'স্পাইস কোনা- = Spice Corner/মাশলার কর্ণার',ex:'スパイスコーナーがあります — মাশলার কর্ণার আছে'},
+{num:'48', jp:'とうきょうディズニーランド',roma:'toukyou dizuniirando',bn:'Tokyo Disneyland',zone:4,mn:'তোউকিও ডিজুনিইরান্দো = Tokyo Disneyland',ex:'とうきょうディズニーランドへいきます — Tokyo Disneyland-এ যাই'},
+{num:'49', jp:'ユニューや. ストア',roma:'yunyu-ya. sutoa',bn:'ইউনিউইয়াসুতোআ স্টোর / মার্কেট (একটি কাল্পনিক নাম)',zone:4,mn:'ইউনিউ-ইয়া = fictional store name in textbook',ex:'ユニューやストアがあります — ইউনিউ স্টোর আছে'},
+];
+
+const L10_ZONES=[
+  {name:'Existence & Basics',emoji:'⚗️',color:'#a8e63d'},
+  {name:'People & Animals',emoji:'👥',color:'#f5d800'},
+  {name:'Objects & Household',emoji:'🏠',color:'#e87b1e'},
+  {name:'Places & Buildings',emoji:'🏢',color:'#88ccff'},
+  {name:'Directions, Positions & Extra',emoji:'🧭',color:'#cc88ff'},
+];
+
+// ============================================================
+// LESSON 11 DATA
+// ============================================================
+const L11=[
+// Zone 0 — Verbs
+{num:'1', jp:'います',roma:'imasu',bn:'আছে',zone:0,mn:'ইমাস > ইমাছ আছে — এখানে থাকার অর্থে',ex:'へやにいます — ঘরে আছি'},
+{num:'2', jp:'います',roma:'imasu',bn:'থাকা',zone:0,mn:'একই শব্দ "います" — context দেখে বুঝতে হবে আছে/থাকা',ex:'にほんにいます — জাপানে থাকি'},
+{num:'3', jp:'かかります',roma:'kakarimasu',bn:'প্রয়োজন/দরকার',zone:0,mn:'কাকারিমাস = কাকার প্রয়োজন! cost/need/take (time)',ex:'じかんがかかります — সময় লাগে'},
+{num:'4', jp:'やすみます',roma:'yasumimasu',bn:'বিশ্রাম নেওয়া',zone:0,mn:'ইয়া-স্যুমি = বিশ্রাম করে। Yasumi = rest',ex:'やすみます — বিশ্রাম নিই'},
+// Zone 1 — Counting (Things & People)
+{num:'5', jp:'ひとつ',roma:'hitotsu',bn:'একটি (বস্তু)',zone:1,mn:'হিতোৎসু = ১টি। হিতোরি=১জন (ভিন্ন!)',ex:'ひとつください — একটি দিন'},
+{num:'6', jp:'ふたつ',roma:'futatsu',bn:'দুইটি',zone:1,mn:'ফুতাৎসু = ২টি',ex:'ふたつください — দুইটি দিন'},
+{num:'7', jp:'みっつ',roma:'mittsu',bn:'তিনটি',zone:1,mn:'মিৎৎসু = ৩টি',ex:'みっつください — তিনটি দিন'},
+{num:'8', jp:'よっつ',roma:'yottsu',bn:'চারটি',zone:1,mn:'ইয়োৎৎসু = ৪টি',ex:'よっつください — চারটি দিন'},
+{num:'9', jp:'いつつ',roma:'itsutsu',bn:'পাঁচটি',zone:1,mn:'ইৎসুৎসু = ৫টি',ex:'いつつください — পাঁচটি দিন'},
+{num:'10', jp:'むっつ',roma:'muttsu',bn:'ছয়টি',zone:1,mn:'মুৎৎসু = ৬টি',ex:'むっつください — ছয়টি দিন'},
+{num:'11', jp:'ななつ',roma:'nanatsu',bn:'সাতটি',zone:1,mn:'নানাৎসু = ৭টি। নানা = সাত',ex:'ななつください — সাতটি দিন'},
+{num:'12', jp:'やっつ',roma:'yattsu',bn:'আটটি',zone:1,mn:'ইয়াৎৎসু = ৮টি',ex:'やっつください — আটটি দিন'},
+{num:'13', jp:'ここのつ',roma:'kokonotsu',bn:'নয়টি',zone:1,mn:'কোকোনোৎসু = ৯টি। কোকো = নয়',ex:'ここのつください — নয়টি দিন'},
+{num:'14', jp:'とお',roma:'too',bn:'দশটি',zone:1,mn:'তো-ও = ১০টি। তো! ১০ বার যাব',ex:'とおください — দশটি দিন'},
+{num:'15', jp:'いくつ',roma:'ikutsu',bn:'কয়টি',zone:1,mn:'ইকুৎসু = কয়টি? How many things?',ex:'いくつですか — কয়টি?'},
+{num:'16', jp:'ひとり',roma:'hitori',bn:'একজন',zone:1,mn:'হিতোরি = ১জন। হিতোৎসু=১টি জিনিস (ভিন্ন!)',ex:'ひとりです — একজন'},
+{num:'17', jp:'ふたり',roma:'futari',bn:'দুইজন',zone:1,mn:'ফুতারি = ২জন',ex:'ふたりです — দুইজন'},
+{num:'18', jp:'-にん',roma:'-nin',bn:'-জন',zone:1,mn:'-নিন = জন (counter for people). নিন জেন জেন',ex:'さんにん = তিনজন'},
+{num:'—', jp:'にんぎょう',roma:'ningyou',bn:'পুতুল',zone:1,mn:'নিনগ্যো = পুতুল। [JLPT N5]',ex:'にんぎょうがあります — পুতুল আছে'},
+{num:'19', jp:'-だい',roma:'-dai',bn:'-টি (গাড়ি, যন্ত্রাংশ)',zone:1,mn:'-দাই = counter for machines/vehicles। -দাই > দায়ী গাড়ি টি',ex:'くるまいちだい = একটি গাড়ি'},
+{num:'20', jp:'-まい',roma:'-mai',bn:'-টি/খানা (পেপার, স্ট্যাম্প)',zone:1,mn:'-মাই = counter for flat thin things। -মাই > My হালকা পাতলা টি',ex:'かみいちまい = কাগজ একখানা'},
+{num:'21', jp:'-かい',roma:'-kai',bn:'বার (একবার, দুইবার)',zone:1,mn:'-কাই = counter for occurrences/times',ex:'いちかい = একবার'},
+// Zone 2 — Food & Mail/Post
+{num:'22', jp:'りんご',roma:'ringo',bn:'আপেল',zone:2,mn:'রিংগো = আপেল। রিংগো=আপেল!',ex:'りんごがあります — আপেল আছে'},
+{num:'23', jp:'みかん',roma:'mikan',bn:'কমলা লেবু',zone:2,mn:'মিকান = কমলা লেবু। মিকান=কমলা লেবু!',ex:'みかんがあります — কমলা লেবু আছে'},
+{num:'24', jp:'サンドイッチ',roma:'sandoicchi',bn:'স্যান্ডউইচ',zone:2,mn:'সান্দোইচ্চি = Sandwich!',ex:'サンドイッチがあります — স্যান্ডউইচ আছে'},
+{num:'25', jp:'カレー(ライス)',roma:'kare-(raisu)',bn:'তরকারি ও ভাত',zone:2,mn:'কারে-(রাইসু) = Curry (Rice)!',ex:'カレーライスがあります — কারি রাইস আছে'},
+{num:'26', jp:'アイスクリーム',roma:'aisukuriimu',bn:'আইসক্রিম',zone:2,mn:'আইসু-কুরি-মু = Ice Cream!',ex:'アイスクリームがあります — আইসক্রিম আছে'},
+{num:'27', jp:'きって',roma:'kitte',bn:'ডাকটিকেট',zone:2,mn:'কিৎৎে = postage stamp। কাঁকি=লেখা+টিকেট',ex:'きってがあります — ডাকটিকেট আছে'},
+{num:'28', jp:'はがき',roma:'hagaki',bn:'পোস্ট কার্ড',zone:2,mn:'হাগাকি = postcard। হা=leaf like card',ex:'はがきがあります — পোস্ট কার্ড আছে'},
+{num:'29', jp:'ふうとう',roma:'fuutou',bn:'খাম',zone:2,mn:'ফু-উ-তো-উ = envelope/খাম। ফুতো=খাম',ex:'ふうとうがあります — খাম আছে'},
+{num:'30', jp:'そくたつ',roma:'sokutatsu',bn:'স্পেশাল ডেলিভারি',zone:2,mn:'সোকুতাৎসু = express/special delivery',ex:'そくたつでおくります — স্পেশাল ডেলিভারিতে পাঠাই'},
+{num:'31', jp:'かきとめ',roma:'kakitome',bn:'রেজিস্টার্ড মেইল',zone:2,mn:'কাকি=লেখা, তোমে=আটকানো। Registered mail',ex:'かきとめでおくります — রেজিস্টার্ড মেইলে পাঠাই'},
+{num:'32', jp:'エアメール',roma:'ea me-ru',bn:'এয়ার মেইল',zone:2,mn:'এয়া মে-রু = Air Mail!',ex:'エアメールでおくります — এয়ার মেইলে পাঠাই'},
+{num:'33', jp:'ふなびん',roma:'funabin',bn:'সী মেইল',zone:2,mn:'ফুনা=ship(জাহাজ), বিন=mail। Sea mail',ex:'ふなびんでおくります — সী মেইলে পাঠাই'},
+// Zone 3 — Family
+{num:'34', jp:'りょうしん',roma:'ryoushin',bn:'মা বাবা',zone:3,mn:'রিয়ো-শিন = both parents। রিয়ো=both',ex:'りょうしんがいます — মা-বাবা আছেন'},
+{num:'35', jp:'きょうだい',roma:'kyoudai',bn:'ভাই বোন',zone:3,mn:'কিয়ো-দাই = siblings। ভাই-বোন সবাই',ex:'きょうだいがいます — ভাই বোন আছে'},
+{num:'36', jp:'あに',roma:'ani',bn:'বড় ভাই (নিজের)',zone:3,mn:'আনি = নিজের বড় ভাই। আনি বড় ভাইয়ের জন্য',ex:'あにがいます — বড় ভাই আছে'},
+{num:'37', jp:'おにいさん',roma:'oniisan',bn:'বড় ভাই (অন্যের)',zone:3,mn:'ও-নি-সান = অন্যের বড় ভাই। আনি বড়',ex:'おにいさんがいます — বড় ভাই আছেন'},
+{num:'38', jp:'あね',roma:'ane',bn:'বড় বোন (নিজের)',zone:3,mn:'আনে = নিজের বড় বোন। আনে বড় বোন নিজে',ex:'あねがいます — বড় বোন আছে'},
+{num:'39', jp:'おねえさん',roma:'oneesan',bn:'বড় বোন (অন্যের)',zone:3,mn:'ও-নে-সান = অন্যের বড় বোন। আনে বড় বোন',ex:'おねえさんがいます — বড় বোন আছেন'},
+{num:'40', jp:'おとうと',roma:'otouto',bn:'ছোট ভাই (নিজের)',zone:3,mn:'ওতো-উতো = নিজের ছোট ভাই। ওতো-উতো=ছোট ভাই',ex:'おとうとがいます — ছোট ভাই আছে'},
+{num:'41', jp:'おとうとさん',roma:'otoutosan',bn:'ছোট ভাই (অন্যের)',zone:3,mn:'ওতো-উতো-সান = অন্যের ছোট ভাই',ex:'おとうとさんがいます — ছোট ভাই আছেন'},
+{num:'42', jp:'いもうと',roma:'imouto',bn:'ছোট বোন (আমার)',zone:3,mn:'ইমো-উতো = নিজের ছোট বোন। ইমেতো আমার ছোট বোন',ex:'いもうとがいます — ছোট বোন আছে'},
+{num:'43', jp:'いもうとさん',roma:'imoutosan',bn:'ছোট বোন (অন্যের)',zone:3,mn:'ইমো-উতো-সান = অন্যের ছোট বোন',ex:'いもうとさんがいます — ছোট বোন আছেন'},
+// Zone 4 — Time, Misc & Expressions
+{num:'44', jp:'がいこく',roma:'gaikoku',bn:'বিদেশ',zone:4,mn:'গাই(外=outside)+কোকু(国=country)=বিদেশ',ex:'がいこくにいきます — বিদেশে যাই'},
+{num:'45', jp:'-じかん',roma:'-jikan',bn:'-ঘন্টা (সময়)',zone:4,mn:'-জিকান = hour counter। জিকান=ঘন্টা',ex:'いちじかん = এক ঘন্টা'},
+{num:'46', jp:'-しゅうかん',roma:'-shuukan',bn:'-সপ্তাহ',zone:4,mn:'-শুউকান = week counter। শুকান=সপ্তাহ ১',ex:'いっしゅうかん = এক সপ্তাহ'},
+{num:'47', jp:'-かげつ',roma:'-kagetsu',bn:'-মাস',zone:4,mn:'-কাগেৎসু = month counter',ex:'いっかげつ = এক মাস'},
+{num:'48', jp:'-ねん',roma:'-nen',bn:'-বছর',zone:4,mn:'-নেন = year counter। নেন=বছরান্তে',ex:'いちねん = এক বছর'},
+{num:'49', jp:'-ぐらい',roma:'-gurai',bn:'-মত/প্রায়',zone:4,mn:'-গুরাই = approximately/about/প্রায়',ex:'いちじかんぐらい = এক ঘন্টা প্রায়'},
+{num:'50', jp:'どのくらい',roma:'dono kurai',bn:'কত সময়/ কতক্ষণ',zone:4,mn:'দোনো কুরাই = how long/how much approximately?',ex:'どのくらいかかりますか — কতক্ষণ লাগবে?'},
+{num:'51', jp:'ぜんぶで',roma:'zenbu de',bn:'সর্বমোট',zone:4,mn:'জেনবু দে = altogether/in total। সর্বমোট',ex:'ぜんぶでいくらですか — সর্বমোট কত?'},
+{num:'52', jp:'みんな',roma:'minna',bn:'সবাই',zone:4,mn:'মিন্না = সবাই। Everyone',ex:'みんながいます — সবাই আছে'},
+{num:'53', jp:'-だけ',roma:'-dake',bn:'শুধুমাত্র',zone:4,mn:'-দাকে = only/just। দাকে শুধুমাত্র ভয় পাই',ex:'ひとつだけください — একটিই শুধু দিন'},
+{num:'—', jp:'いらっしゃいませ',roma:'irasshaimase',bn:'স্বাগতম/ May I Help You?',zone:4,mn:'ইরাশ্যাইমাসে = দোকানে ঢুকলেই সবাই বলে!',ex:'いらっしゃいませ！ — স্বাগতম!'},
+{num:'—', jp:'りゅうがくせい',roma:'ryuugakusei',bn:'বিদেশী স্টুডেন্ট',zone:4,mn:'রিউ-গাকু-সেই = international student',ex:'りゅうがくせいです — আমি বিদেশী স্টুডেন্ট'},
+{num:'55', jp:'いい（お）てんきですね',roma:'ii (o)tenki desu ne',bn:'ভাল আবহাওয়া!',zone:4,mn:'いい=good, てんき=weather, ですね=isn\'t it? ভাল আবহাওয়া!',ex:'いいおてんきですね！ — ভাল আবহাওয়া, তাই না?'},
+{num:'56', jp:'おでかけですか',roma:'odekake desu ka',bn:'আপনি কি বাইরে যাচ্ছেন?',zone:4,mn:'ওদেকাকে = going out। আপনি কি বাইরে?',ex:'おでかけですか？ — বাইরে যাচ্ছেন?'},
+{num:'57', jp:'ちょっと -まで',roma:'chotto -made',bn:'একটু - পর্যন্ত',zone:4,mn:'চোৎতো = a little bit, মাদে = until',ex:'ちょっとそこまで — একটু ওখান পর্যন্ত'},
+{num:'58', jp:'いって いらっしゃい',roma:'itte irasshai',bn:'গিয়ে আসুন (যিনি বাসায় থাকবে তিনি বলবে)',zone:4,mn:'ইৎতে ইরাশ্যাই = যিনি ঘরে থাকবেন তিনি বলেন যাওয়া ব্যক্তিকে',ex:'いっていらっしゃい！ — গিয়ে আসুন!'},
+{num:'59', jp:'いって まいります',roma:'itte mairimasu',bn:'আমি যাচ্ছি (যিনি বাইরে যাবে তিনি বলবে)',zone:4,mn:'ইৎতে মাইরিমাস = যিনি বাইরে যাবেন তিনি বলেন',ex:'いってまいります！ — আমি যাচ্ছি!'},
+{num:'60', jp:'それから',roma:'sorekara',bn:'তারপর',zone:4,mn:'সোরেকারা = after that/then। তারপর কী?',ex:'それからどうしますか — তারপর কী করবেন?'},
+{num:'61', jp:'オーストラリア',roma:'o-sutorariya',bn:'অস্ট্রেলিয়া',zone:4,mn:'ও-সুতোরারিয়া = Australia! ও-সুতোরারিয়া=অস্ট্রেলিয়া',ex:'オーストラリアにいきます — অস্ট্রেলিয়াতে যাই'},
+];
+
+const L11_ZONES=[
+  {name:'Verbs',emoji:'⚗️',color:'#f5d800'},
+  {name:'Counting — Things & People',emoji:'🔢',color:'#a8e63d'},
+  {name:'Food & Post / Mail',emoji:'📬',color:'#e87b1e'},
+  {name:'Family Words',emoji:'👨‍👩‍👧‍👦',color:'#88ccff'},
+  {name:'Time, Misc & Expressions',emoji:'⏰',color:'#cc88ff'},
+];
+
+// ============================================================
+// AUDIO
+// ============================================================
+let lastBtn=null,voicesLoaded=false,jaVoice=null,enVoice=null;
+function loadVoices(){
+  if(voicesLoaded)return;
+  const all=window.speechSynthesis?.getVoices()||[];
+  if(!all.length)return;
+  voicesLoaded=true;
+  jaVoice=all.find(v=>v.lang==='ja-JP'&&v.name.toLowerCase().includes('google'))
+    ||all.find(v=>v.lang==='ja-JP'||v.lang.startsWith('ja'))||null;
+  enVoice=all.find(v=>v.lang==='en-US'&&/male|david|mark|alex|daniel/i.test(v.name))
+    ||all.find(v=>v.lang.startsWith('en'))||null;
+}
+if(window.speechSynthesis){window.speechSynthesis.onvoiceschanged=loadVoices;loadVoices();}
+function speak(text,btnEl){
+  if(lastBtn){lastBtn.classList.remove('playing');lastBtn=null;}
+  if(btnEl){lastBtn=btnEl;btnEl.classList.add('playing');}
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();loadVoices();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ja-JP';u.rate=0.8;u.pitch=1;u.volume=1;
+  if(jaVoice)u.voice=jaVoice;
+  u.onend=u.onerror=()=>{if(btnEl)btnEl.classList.remove('playing');if(lastBtn===btnEl)lastBtn=null;};
+  window.speechSynthesis.speak(u);
+}
+let popTimer=null;
+function showPopup(){
+  const p=document.getElementById('correct-popup');
+  if(popTimer)clearTimeout(popTimer);
+  p.classList.add('show');
+  popTimer=setTimeout(()=>p.classList.remove('show'),1700);
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();loadVoices();
+  const u=new SpeechSynthesisUtterance("You're goddamn right.");
+  u.lang='en-US';u.rate=0.85;u.pitch=0.75;u.volume=1;
+  if(enVoice)u.voice=enVoice;
+  window.speechSynthesis.speak(u);
+}
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+function showPage(id,btn,isL11){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ============================================================
+// WORD LIST BUILDER
+// ============================================================
+function buildWordList(les,words,zones){
+  const container=document.getElementById('wl'+les);
+  const sub=document.getElementById('l'+les+'-list-sub');
+  if(sub)sub.textContent=words.length+' total words · Click 🔊 for audio · Click ROMAJI box to reveal';
+  let html='';
+  for(let z=0;z<5;z++){
+    const zw=words.filter(w=>w.zone===z);
+    if(!zw.length)continue;
+    const zn=zones[z];
+    html+=`<div class="zone-section">
+      <div class="zone-header">
+        <span class="zone-tag ${les===11?'l11':''}">Zone ${z+1}</span>
+        <span class="zone-name" style="color:${zn.color}">${zn.emoji} ${zn.name}</span>
+        <span class="zone-count">${zw.length} words</span>
+      </div>
+      <table class="word-table">
+        <thead><tr><th>#</th><th>Japanese</th><th>Romaji</th><th>Bangla</th><th>🔊</th></tr></thead>
+        <tbody>`;
+    zw.forEach(w=>{
+      const isUn=w.num==='—';
+      html+=`<tr class="${isUn?'unnumbered':''}">
+        <td class="num-cell ${isUn?'dash':''}"><span>${w.num}</span></td>
+        <td class="jp-cell">${w.jp}</td>
+        <td class="roma-cell">
+          <span class="roma-box" id="rb${les}-${w.jp.replace(/[^\w]/g,'_')}" onclick="revealRoma(this,'${w.roma.replace(/'/g,"\\'")}')">
+            <span class="rb-eye" style="font-size:14px">👁</span>
+            <span class="rb-txt" style="font-size:12px;font-weight:600;letter-spacing:.5px">ROMAJI</span>
+          </span>
+        </td>
+        <td class="bn-cell">${w.bn}</td>
+        <td class="audio-cell"><button class="speak-btn" onclick="speak('${w.jp.replace(/'/g,"\\'")}',this)">🔊</button></td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+  container.innerHTML=html;
+}
+
+function revealRoma(box,roma){
+  if(box.classList.contains('revealed'))return;
+  box.style.transform='scale(1.07)';box.style.boxShadow='0 0 20px rgba(168,230,61,.4)';
+  setTimeout(()=>{box.style.transform='';box.style.boxShadow='';},250);
+  box.querySelector('.rb-eye').textContent='✓';
+  box.querySelector('.rb-txt').textContent=roma;
+  box.classList.add('revealed');
+}
+buildWordList(10,L10,L10_ZONES);
+buildWordList(11,L11,L11_ZONES);
+
+// ============================================================
+// FLASHCARD STATE & FUNCTIONS
+// ============================================================
+const fcState={
+  10:{deck:[...L10],idx:0,flipped:false,ratings:{},filter:'all'},
+  11:{deck:[...L11],idx:0,flipped:false,ratings:{},filter:'all'}
+};
+
+function getFCDeck(les){
+  const s=fcState[les];const words=les===10?L10:L11;
+  if(s.filter==='hard')return words.filter(w=>s.ratings[w.jp+'_'+w.bn]==='hard');
+  if(s.filter==='ok')return words.filter(w=>s.ratings[w.jp+'_'+w.bn]==='ok');
+  if(s.filter==='easy')return words.filter(w=>s.ratings[w.jp+'_'+w.bn]==='easy');
+  if(s.filter==='unseen')return words.filter(w=>!s.ratings[w.jp+'_'+w.bn]);
+  return[...(les===10?L10:L11)];
+}
+
+function setFilter(les,f,btn){
+  const prefix='fc'+les;
+  document.querySelectorAll('#'+prefix+'-filters .filter-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  fcState[les].filter=f;
+  fcState[les].deck=getFCDeck(les);
+  if(!fcState[les].deck.length){fcState[les].filter='all';fcState[les].deck=les===10?[...L10]:[...L11];}
+  fcState[les].idx=0;fcState[les].flipped=false;renderFC(les);
+}
+
+function renderFC(les){
+  const s=fcState[les];const w=s.deck[s.idx];const total=s.deck.length;
+  const p='fc'+les;
+  document.getElementById(p+'-info').textContent='Card '+(s.idx+1)+' of '+total;
+  document.getElementById(p+'-fill').style.width=((s.idx+1)/total*100)+'%';
+  document.getElementById(p+'-jp').textContent=w.jp;
+  document.getElementById(p+'-roma').textContent=w.roma;
+  document.getElementById(p+'-bn').textContent=w.bn;
+  document.getElementById(p+'-mn').textContent=w.mn;
+  document.getElementById(p+'-ex').textContent='💬 '+w.ex;
+  document.getElementById('ci'+les).classList.remove('flipped');
+  s.flipped=false;
+  document.getElementById(p+'-rating').classList.remove('visible');
+  document.getElementById(p+'-prev').disabled=s.idx===0;
+  document.getElementById(p+'-next').disabled=s.idx===total-1;
+  updateRatingCounts(les);
+}
+
+function flipCard(les){
+  const s=fcState[les];s.flipped=!s.flipped;
+  document.getElementById('ci'+les).classList.toggle('flipped',s.flipped);
+  document.getElementById('fc'+les+'-rating').classList.toggle('visible',s.flipped);
+}
+
+function fcNav(les,dir){
+  const s=fcState[les];
+  s.idx=Math.max(0,Math.min(s.deck.length-1,s.idx+dir));
+  renderFC(les);
+}
+
+function fcShuffle(les){
+  const d=fcState[les].deck;
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  fcState[les].idx=0;renderFC(les);
+}
+
+function fcReset(les){fcState[les].idx=0;fcState[les].flipped=false;renderFC(les);}
+
+function speakFC(les){
+  const w=fcState[les].deck[fcState[les].idx];
+  speak(w.jp,document.getElementById('fc'+les+'-speak'));
+}
+
+function rateCard(les,rating){
+  const w=fcState[les].deck[fcState[les].idx];
+  fcState[les].ratings[w.jp+'_'+w.bn]=rating;
+  updateRatingCounts(les);
+  if(fcState[les].idx<fcState[les].deck.length-1)fcNav(les,1);
+  else document.getElementById('fc'+les+'-info').textContent='✅ All cards rated!';
+}
+
+function updateRatingCounts(les){
+  const r=fcState[les].ratings;const k=Object.keys(r);
+  document.getElementById('cnt'+les+'-hard').textContent=k.filter(id=>r[id]==='hard').length;
+  document.getElementById('cnt'+les+'-ok').textContent=k.filter(id=>r[id]==='ok').length;
+  document.getElementById('cnt'+les+'-easy').textContent=k.filter(id=>r[id]==='easy').length;
+}
+
+renderFC(10);renderFC(11);
+
+// ============================================================
+// QUIZ
+// ============================================================
+const qzState={
+  10:{questions:[],idx:0,score:0,wrongs:[],answered:false},
+  11:{questions:[],idx:0,score:0,wrongs:[],answered:false}
+};
+
+document.querySelectorAll('.radio-chip').forEach(chip=>{
+  chip.addEventListener('click',function(){
+    this.closest('.radio-row').querySelectorAll('.radio-chip').forEach(c=>c.classList.remove('sel'));
+    this.classList.add('sel');
+  });
+});
+
+function getRadio(rowId){const c=document.querySelector('#'+rowId+' .radio-chip.sel');return c?c.dataset.val:null;}
+
+function getPool(les){
+  const words=les===10?L10:L11;
+  const pv=getRadio('qp'+les);
+  const s=fcState[les];
+  if(pv==='hard')return words.filter(w=>s.ratings[w.jp+'_'+w.bn]==='hard');
+  if(pv&&pv.startsWith('z'))return words.filter(w=>w.zone===parseInt(pv[1]));
+  return[...words];
+}
+
+function genQ(w,type,allWords){
+  const others=allWords.filter(x=>x.jp!==w.jp||x.bn!==w.bn).sort(()=>Math.random()-.5).slice(0,3);
+  let prompt,display,correct,opts,displaySub='';
+  if(type==='jp_bn'){prompt='What is the Bangla meaning?';display=w.jp;displaySub=w.roma;correct=w.bn;opts=[w.bn,...others.map(x=>x.bn)];}
+  else if(type==='bn_jp'){prompt='Which Japanese word matches?';display=w.bn;correct=w.jp;opts=[w.jp,...others.map(x=>x.jp)];}
+  else if(type==='audio'){prompt='Listen and choose the correct Japanese word';display='AUDIO';correct=w.jp;opts=[w.jp,...others.map(x=>x.jp)];}
+  else{prompt='What is the romaji pronunciation?';display=w.jp;correct=w.roma;opts=[w.roma,...others.map(x=>x.roma)];}
+  return{w,type,prompt,display,displaySub,correct,opts:opts.sort(()=>Math.random()-.5)};
+}
+
+function startQuiz(les){
+  const words=les===10?L10:L11;
+  const type=getRadio('qt'+les)||'mixed';
+  const cv=getRadio('qc'+les)||'20';
+  const pool=getPool(les);
+  if(!pool.length){alert('No words in that pool!');return;}
+  const types=['jp_bn','bn_jp','audio','roma'];
+  const count=cv==='all'?pool.length:parseInt(cv);
+  const shuffled=[...pool].sort(()=>Math.random()-.5);
+  const qs=[];
+  for(let i=0;i<count;i++){
+    const w=shuffled[i%shuffled.length];
+    const t=type==='mixed'?types[Math.floor(Math.random()*types.length)]:type;
+    qs.push(genQ(w,t,words));
+  }
+  qzState[les]={questions:qs,idx:0,score:0,wrongs:[],answered:false};
+  document.getElementById('l'+les+'-setup-view').style.display='none';
+  document.getElementById('l'+les+'-result-view').style.display='none';
+  document.getElementById('l'+les+'-active-view').style.display='block';
+  renderQ(les);
+}
+
+function renderQ(les){
+  const q=qzState[les].questions[qzState[les].idx];
+  const total=qzState[les].questions.length;
+  const isL11=les===11;
+  let displayHtml='';
+  if(q.type==='audio'){
+    displayHtml=`<div class="qz-audio-icon" onclick="speak('${q.w.jp.replace(/'/g,"\\'")}')">🔊</div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:1px">CLICK TO HEAR</div>`;
+    setTimeout(()=>speak(q.w.jp),350);
+  }else{
+    displayHtml=`<div class="qz-word">${q.display}</div>${q.displaySub?`<div class="qz-word-sub">${q.displaySub}</div>`:''}`;
+  }
+  const optsHtml=q.opts.map(o=>`<button class="qz-opt" data-val="${o.replace(/"/g,'&quot;')}" onclick="answerQ(${les},this.dataset.val)">${o}</button>`).join('');
+  document.getElementById('l'+les+'-qbody').innerHTML=`
+    <div class="qz-top">
+      <span class="qz-score">QUESTION ${qzState[les].idx+1} / ${total}</span>
+      <span class="qz-score" style="color:var(--green)">✓ ${qzState[les].score} CORRECT</span>
+    </div>
+    <div class="qz-progress-bar"><div class="qz-prog-fill" style="width:${(qzState[les].idx/total*100)}%"></div></div>
+    <div class="qz-question ${isL11?'l11':''}"><div class="qz-prompt">${q.prompt}</div>${displayHtml}</div>
+    <div class="qz-options">${optsHtml}</div>
+    <div class="qz-feedback" id="l${les}-fb"></div>
+    <div class="qz-next" id="l${les}-next">
+      <button class="icon-btn primary ${isL11?'l11':''}" onclick="nextQ(${les})" style="font-size:13px;padding:9px 28px;letter-spacing:2px">${qzState[les].idx+1<total?'NEXT →':'RESULTS'}</button>
+    </div>`;
+}
+
+function answerQ(les,sel){
+  if(qzState[les].answered)return;
+  qzState[les].answered=true;
+  const q=qzState[les].questions[qzState[les].idx];
+  const ok=sel===q.correct;
+  if(ok){qzState[les].score++;showPopup();}
+  else qzState[les].wrongs.push(q.w);
+  document.querySelectorAll('#l'+les+'-qbody .qz-opt').forEach(btn=>{
+    btn.disabled=true;
+    const v=btn.dataset.val;
+    if(v===q.correct)btn.classList.add('correct');
+    else if(v===sel&&!ok)btn.classList.add('wrong');
+  });
+  const fb=document.getElementById('l'+les+'-fb');
+  fb.classList.add('show');
+  fb.innerHTML=ok
+    ?`<span style="color:var(--green);font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:1px">✓ CORRECT</span>`
+    :`<span style="color:#cc4444;font-family:'Oswald',sans-serif;letter-spacing:1px">✗ WRONG</span> — Answer: <strong style="color:var(--yellow)">${q.correct}</strong><br><span style="font-size:11px;color:var(--muted)">${q.w.mn}</span>`;
+  document.getElementById('l'+les+'-next').classList.add('show');
+}
+
+function nextQ(les){
+  qzState[les].idx++;qzState[les].answered=false;
+  if(qzState[les].idx>=qzState[les].questions.length)showResult(les);
+  else renderQ(les);
+}
+
+function showResult(les){
+  const total=qzState[les].questions.length;
+  const pct=Math.round(qzState[les].score/total*100);
+  const grade=pct>=90?'S':pct>=75?'A':pct>=60?'B':pct>=45?'C':'D';
+  const quotes={S:'"You\'re goddamn right." — W.W.',A:'"I am the danger." — Heisenberg',B:'"Say my name." — Walter White',C:'"I did it for me." — Walt',D:'"Better call Saul." — probably you right now'};
+  const gc={S:'var(--green2)',A:'var(--green)',B:'var(--yellow)',C:'var(--orange)',D:'var(--red)'};
+  const uniq=[...new Map(qzState[les].wrongs.map(w=>[w.jp+'_'+w.bn,w])).values()];
+  const wrongHtml=uniq.length?`<div class="wrong-list">
+    <h4>— Review These ${uniq.length} Words —</h4>
+    ${uniq.map(w=>`<div class="wrong-item">
+      <span class="wrong-jp">${w.jp}</span>
+      <button class="speak-btn" onclick="speak('${w.jp.replace(/'/g,"\\'")}',this)" style="width:28px;height:28px;font-size:12px;flex-shrink:0">🔊</button>
+      <span class="wrong-bn">${w.bn}</span>
+    </div>`).join('')}
+  </div>`:`<p style="color:var(--green);font-family:'DM Mono',monospace;font-size:12px;margin-top:14px">Perfect score. You're goddamn right.</p>`;
+  const isL11=les===11;
+  document.getElementById('l'+les+'-active-view').style.display='none';
+  document.getElementById('l'+les+'-result-view').style.display='block';
+  document.getElementById('l'+les+'-rbody').innerHTML=`
+    <div class="result-grade" style="color:${gc[grade]};text-shadow:0 0 28px ${gc[grade]}">${grade}</div>
+    <div class="result-label">${qzState[les].score} / ${total} correct · ${pct}%</div>
+    <div class="result-quote">${quotes[grade]}</div>
+    <div class="result-grid">
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--green)">${qzState[les].score}</div><div class="result-stat-lbl">Correct</div></div>
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--red)">${total-qzState[les].score}</div><div class="result-stat-lbl">Wrong</div></div>
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--yellow)">${pct}%</div><div class="result-stat-lbl">Score</div></div>
+    </div>
+    ${wrongHtml}
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px">
+      <button class="icon-btn primary ${isL11?'l11':''}" onclick="retryQuiz(${les})">↺ RETRY</button>
+      <button class="icon-btn" onclick="retryWrong(${les})" ${!uniq.length?'disabled':''}>🔴 RETRY WRONG</button>
+      <button class="icon-btn" onclick="backToSetup(${les})">⚙ NEW QUIZ</button>
+    </div>`;
+}
+
+function retryQuiz(les){
+  qzState[les].idx=0;qzState[les].score=0;qzState[les].wrongs=[];qzState[les].answered=false;
+  qzState[les].questions=[...qzState[les].questions].sort(()=>Math.random()-.5);
+  document.getElementById('l'+les+'-result-view').style.display='none';
+  document.getElementById('l'+les+'-active-view').style.display='block';
+  renderQ(les);
+}
+
+function retryWrong(les){
+  const words=les===10?L10:L11;
+  const ww=[...new Map(qzState[les].wrongs.map(w=>[w.jp+'_'+w.bn,w])).values()];
+  if(!ww.length)return;
+  const types=['jp_bn','bn_jp','audio','roma'];
+  const qs=ww.map(w=>genQ(w,types[Math.floor(Math.random()*types.length)],words)).sort(()=>Math.random()-.5);
+  qzState[les]={questions:qs,idx:0,score:0,wrongs:[],answered:false};
+  document.getElementById('l'+les+'-result-view').style.display='none';
+  document.getElementById('l'+les+'-active-view').style.display='block';
+  renderQ(les);
+}
+
+function backToSetup(les){
+  document.getElementById('l'+les+'-result-view').style.display='none';
+  document.getElementById('l'+les+'-active-view').style.display='none';
+  document.getElementById('l'+les+'-setup-view').style.display='block';
+}
+</script>
+</body>
+</html>

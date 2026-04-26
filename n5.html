@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>JLPT Samurai — N5 Dojo</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page-loader"><div class="logo">⚔️ JLPT SAMURAI</div><div class="bar"><div class="bar-fill"></div></div></div>
+<canvas id="sakura-canvas"></canvas>
+<nav class="samurai-nav"></nav>
+
+<div class="page-wrap">
+  <div class="page-title">N5 DOJO — 五</div>
+  <div class="page-sub">Vocabulary & Kanji for JLPT N5</div>
+  <div class="ink-divider"></div>
+
+  <!-- VOCAB SECTION -->
+  <h2 style="font-family:var(--font-head);font-size:16px;color:var(--gold);letter-spacing:3px;margin-bottom:16px">📚 VOCABULARY LESSONS</h2>
+  <div class="cards-grid" id="lesson-grid"></div>
+
+  <div class="ink-divider"></div>
+
+  <!-- KANJI SECTION -->
+  <h2 style="font-family:var(--font-head);font-size:16px;color:var(--gold);letter-spacing:3px;margin-bottom:16px">漢 KANJI</h2>
+  <div style="display:grid;grid-template-columns:1fr;max-width:400px;gap:14px">
+    <a href="kanji.html" class="lesson-card" style="padding:32px 20px">
+      <div class="lc-num" style="font-size:40px">漢字</div>
+      <div class="lc-label" style="margin-top:8px">N5 Kanji Study</div>
+      <div class="lc-count" id="kanji-count">Loading...</div>
+    </a>
+  </div>
+</div>
+
+<footer class="samurai-footer"></footer>
+<script src="data-loader.js"></script>
+<script src="app.js"></script>
+<script>
+(function(){
+  window.addEventListener('samurai-data-ready', init);
+  loadSamuraiData(); buildNavbar('n5'); buildFooter(); initSakura(); hideLoader();
+
+  function init(){
+    const data = window.SAMURAI_DATA;
+    const grid = document.getElementById('lesson-grid');
+    let html = '';
+
+    // Dynamic: show all 25 lesson slots, unlock any that have data
+    for(let i=1; i<=25; i++){
+      const st = getLessonStatus(i);
+      const hasData = st.total > 0; // Lesson has words loaded from data-loader.js
+      if(hasData){
+        const circumference = 2*Math.PI*20;
+        const offset = circumference - (st.pct/100)*circumference;
+        html += `<a href="lesson.html?id=${i}" class="lesson-card" style="animation-delay:${i*50}ms">
+          <div class="lc-badge">${st.status}</div>
+          <div class="lc-num">${i}</div>
+          <div class="lc-label">Lesson ${i}</div>
+          <div class="lc-count">${st.total} words</div>
+          ${st.due?`<div style="font-family:var(--font-mono);font-size:10px;color:var(--gold);margin-top:4px">📅 ${st.due} due</div>`:''}
+          ${st.weak?`<div style="font-family:var(--font-mono);font-size:10px;color:var(--red);margin-top:2px">🔴 ${st.weak} weak</div>`:''}
+          <svg class="progress-ring" viewBox="0 0 50 50">
+            <circle class="ring-bg" cx="25" cy="25" r="20"/>
+            <circle class="ring-fg" cx="25" cy="25" r="20" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+          </svg>
+        </a>`;
+      } else {
+        html += `<div class="lesson-card locked">
+          <div class="lc-badge">🔒</div>
+          <div class="lc-num" style="opacity:.3">${i}</div>
+          <div class="lc-label">Coming Soon</div>
+        </div>`;
+      }
+    }
+    grid.innerHTML = html;
+
+    // Kanji count
+    const kc = document.getElementById('kanji-count');
+    const kanjiMastered = data.kanji.filter((_,i)=>{const m=getWordMastery('kanji',null,i);return m==='mastered'||m==='learned';}).length;
+    kc.textContent = `${data.kanji.length} kanji · ${kanjiMastered} mastered`;
+  }
+})();
+</script>
+</body>
+</html>

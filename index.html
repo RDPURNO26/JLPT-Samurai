@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>JLPT Samurai ⚔️ — Master Japanese. One Slash at a Time.</title>
+<meta name="description" content="JLPT Samurai — A premium Japanese language learning platform with flashcards, quizzes, and spaced repetition for JLPT N5.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page-loader"><div class="logo">⚔️ JLPT SAMURAI</div><div class="bar"><div class="bar-fill"></div></div></div>
+<canvas id="sakura-canvas"></canvas>
+<nav class="samurai-nav"></nav>
+
+<div class="page-wrap">
+  <!-- HERO -->
+  <div class="hero">
+    <h1 class="hero-title"><span class="red">JLPT</span> SAMURAI ⚔️</h1>
+    <p class="hero-tagline">Master Japanese. One Slash at a Time.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="stat-val" id="s-mastered">0</div><div class="stat-lbl">⚔️ Words Mastered</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-lessons">0</div><div class="stat-lbl">📚 Lessons Done</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-kanji">0</div><div class="stat-lbl">漢 Kanji Learned</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-streak">0</div><div class="stat-lbl">🔥 Day Streak</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-review">0</div><div class="stat-lbl">⚠️ Needs Review</div></div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div style="text-align:center;margin-bottom:24px">
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:6px">LAST 7 DAYS</div>
+    <div id="calendar" style="display:flex;justify-content:center"></div>
+  </div>
+
+  <div class="ink-divider"></div>
+
+  <!-- DOJO CARDS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px;margin:0 auto 40px">
+    <a href="n5.html" class="lesson-card" style="padding:40px 20px">
+      <div style="font-size:48px;margin-bottom:8px">五</div>
+      <div class="lc-num">N5 DOJO</div>
+      <div class="lc-label">Vocabulary & Kanji</div>
+      <div class="lc-count">15 Lessons Available</div>
+    </a>
+    <div class="lesson-card locked" style="padding:40px 20px;position:relative">
+      <div style="font-size:48px;margin-bottom:8px">四</div>
+      <div class="lc-num">N4 DOJO</div>
+      <div class="lc-label">Coming Soon</div>
+      <div class="lc-badge" style="font-size:12px;background:var(--red);color:#fff;padding:2px 8px;border-radius:2px">LOCKED</div>
+    </div>
+  </div>
+
+  <div class="ink-divider"></div>
+
+  <!-- NEEDS REVIEW -->
+  <div style="margin-top:20px">
+    <h2 style="font-family:var(--font-head);font-size:18px;color:var(--red);letter-spacing:2px;margin-bottom:16px">⚠️ NEEDS REVIEW</h2>
+    <div id="review-section">
+      <p style="color:var(--muted);font-family:var(--font-mono);font-size:13px">Loading...</p>
+    </div>
+  </div>
+</div>
+
+<footer class="samurai-footer"></footer>
+<script src="data-loader.js"></script>
+<script src="app.js"></script>
+<script>
+(function(){
+  window.addEventListener('samurai-data-ready', init);
+  loadSamuraiData(); buildNavbar('home'); buildFooter(); initSakura(); hideLoader();
+
+  function init(){
+    const st = getDashboardStats();
+    animateCounter(document.getElementById('s-mastered'), st.mastered);
+    animateCounter(document.getElementById('s-lessons'), st.lessonsComplete);
+    animateCounter(document.getElementById('s-kanji'), st.kanjiLearned);
+    animateCounter(document.getElementById('s-streak'), st.streak);
+    animateCounter(document.getElementById('s-review'), st.needsReview);
+    if(st.streak>3) document.getElementById('s-streak').style.textShadow='0 0 12px rgba(255,100,0,.5)';
+    renderCalendar('calendar');
+
+    // Needs review
+    const weak = getAllWeakWords();
+    const el = document.getElementById('review-section');
+    if(!weak.length){
+      el.innerHTML = '<p style="color:var(--gold);font-family:var(--font-mono);font-size:13px">You\'re on track, Samurai. ⚔️</p>';
+      return;
+    }
+    // Group by lesson
+    const groups = {};
+    weak.forEach(w => { if(!groups[w.lessonId]) groups[w.lessonId]=[]; groups[w.lessonId].push(w); });
+    let html = '';
+    for(const lid of Object.keys(groups).sort((a,b)=>a-b)){
+      html += `<div style="margin-bottom:16px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:1px">LESSON ${lid}</div>`;
+      groups[lid].slice(0,5).forEach(w=>{
+        html += `<div class="wrong-item"><span class="wrong-jp">${e(w.jp)}</span><span class="wrong-bn">${e(w.bn)}</span>
+          <button class="speak-btn" onclick="speak('${e(w.jp)}',this)">🔊</button>
+          <a href="lesson.html?id=${lid}" class="btn" style="padding:4px 10px;font-size:10px">Study</a></div>`;
+      });
+      html += '</div>';
+    }
+    el.innerHTML = html;
+  }
+  function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+})();
+</script>
+</body>
+</html>
