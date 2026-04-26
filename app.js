@@ -474,13 +474,10 @@ window.SamuraiQuiz = class {
     let prompt, display, correct, opts, displaySub='';
 
     if(this.isKanji){
-      if(type==='kanji_bn'){
-        prompt='What does this kanji mean?'; display=w.kanji||w.jp; correct=w.bn;
-        opts=[w.bn,...others.map(x=>x.bn)];
-      } else {
-        prompt='What is the reading?'; display=w.kanji||w.jp; correct=w.reading||w.roma;
-        opts=[w.reading||w.roma,...others.map(x=>x.reading||x.roma)];
-      }
+      prompt='What is the reading and meaning?'; 
+      display=w.kanji||w.jp; 
+      correct=`${w.reading||w.roma} (${w.bn})`;
+      opts=[correct, ...others.map(x=>`${x.reading||x.roma} (${x.bn})`)];
     } else {
       if(type==='roma' && !w.roma) type = 'jp_bn'; // Fallback if no romaji
       
@@ -509,7 +506,7 @@ window.SamuraiQuiz = class {
         if (opts.length >= 4) break;
         let val;
         if(this.isKanji) {
-           val = type==='kanji_bn' ? gx.bn : (gx.reading||gx.roma);
+           val = `${gx.reading||gx.roma} (${gx.bn})`;
         } else {
            if(type==='jp_bn') val = gx.bn;
            else if(type==='bn_jp' || type==='audio') val = gx.jp;
