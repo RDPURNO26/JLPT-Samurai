@@ -53,47 +53,37 @@ function toggleMode() {
   document.getElementById('auth-error').style.display = 'none';
 }
 
-// Simple hash for demo purposes. Not cryptographically secure, but works for local.
-function hash(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return hash.toString(16);
-}
-
 function handleAuth(e) {
   e.preventDefault();
   const u = document.getElementById('auth-user').value.trim();
   const p = document.getElementById('auth-pass').value;
-  const err = document.getElementById('auth-error');
   
-  if(u.length < 3) { showError("Username must be at least 3 characters."); return; }
-  if(p.length < 4) { showError("Password must be at least 4 characters."); return; }
+  if(u.length < 5 || !u.includes('@')) { showError("Please enter a valid email address."); return; }
+  if(p.length < 6) { showError("Password must be at least 6 characters."); return; }
   
-  const users = JSON.parse(localStorage.getItem('samurai_users') || '{}');
-  
-  if (mode === 'signup') {
-    if (users[u]) {
-      showError("Username already exists.");
-      return;
+  const btn = document.getElementById('auth-submit');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+
+  initFirebase(() => {
+    if (mode === 'signup') {
+      firebase.auth().createUserWithEmailAndPassword(u, p)
+        .then((cred) => loginSuccess(cred.user.uid, u))
+        .catch((error) => {
+          showError(error.message);
+          btn.disabled = false;
+          btn.textContent = 'Create Account';
+        });
+    } else {
+      firebase.auth().signInWithEmailAndPassword(u, p)
+        .then((cred) => loginSuccess(cred.user.uid, u))
+        .catch((error) => {
+          showError(error.message);
+          btn.disabled = false;
+          btn.textContent = 'Login';
+        });
     }
-    users[u] = hash(p);
-    localStorage.setItem('samurai_users', JSON.stringify(users));
-    loginSuccess(u);
-  } else {
-    if (!users[u]) {
-      showError("Username not found.");
-      return;
-    }
-    if (users[u] !== hash(p)) {
-      showError("Incorrect password.");
-      return;
-    }
-    loginSuccess(u);
-  }
+  });
 }
 
 function showError(msg) {
@@ -102,12 +92,13 @@ function showError(msg) {
   err.style.display = 'block';
 }
 
-function loginSuccess(u) {
+function loginSuccess(uid, email) {
   slashAnimation();
-  localStorage.setItem('samurai_active_user', u);
+  localStorage.setItem('samurai_active_user', uid);
+  localStorage.setItem('samurai_active_email', email);
   setTimeout(() => {
     window.location.href = 'index.html';
-  }, 400);
+  }, 600);
 }
 </script>
 </body>

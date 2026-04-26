@@ -82,21 +82,95 @@ window.speak = function(text, btnEl){
   window.speechSynthesis.speak(u);
 };
 
+/* ═══ FIREBASE CLOUD SYNC ═══ */
+const FIREBASE_VERSION = "8.10.1";
+window.initFirebase = function(callback) {
+  if (window.firebase) { if(callback) callback(); return; }
+  const s1 = document.createElement('script');
+  s1.src = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`;
+  document.head.appendChild(s1);
+  s1.onload = () => {
+    const s2 = document.createElement('script');
+    s2.src = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`;
+    document.head.appendChild(s2);
+    s2.onload = () => {
+      const s3 = document.createElement('script');
+      s3.src = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`;
+      document.head.appendChild(s3);
+      s3.onload = () => {
+        firebase.initializeApp({
+          apiKey: "AIzaSyCO9zaTee5V4a3CIQ9RYDPnm8DZKSLuLLo",
+          authDomain: "jlpt-samurai.firebaseapp.com",
+          projectId: "jlpt-samurai",
+          storageBucket: "jlpt-samurai.firebasestorage.app",
+          messagingSenderId: "166726653148",
+          appId: "1:166726653148:web:84fda6e81c9c11c67f5019"
+        });
+        window.db = firebase.firestore();
+        
+        // Listen to auth state
+        firebase.auth().onAuthStateChanged(user => {
+          if(!user && !window.location.href.includes('auth.html')){
+            localStorage.removeItem('samurai_active_user');
+            window.location.href = 'auth.html';
+          }
+        });
+        
+        if (callback) callback();
+      }
+    }
+  }
+};
+
 /* ═══ AUTHENTICATION & LOCALSTORAGE HELPERS ═══ */
 window.CURRENT_USER = localStorage.getItem('samurai_active_user');
 if (!window.CURRENT_USER && !window.location.href.includes('auth.html')) {
   window.location.href = 'auth.html';
 }
 
+// Fetch cloud data automatically if logged in
+if (window.CURRENT_USER && !window.location.href.includes('auth.html')) {
+  initFirebase(() => {
+    window.db.collection('samurai_users').doc(window.CURRENT_USER).get().then(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        const prefix = window.CURRENT_USER + '_';
+        for (const k in data) {
+          localStorage.setItem(prefix + k, data[k]);
+        }
+        window.dispatchEvent(new CustomEvent('samurai-cloud-synced'));
+      }
+    }).catch(console.error);
+  });
+}
+
 window.logout = function() {
+  if(window.firebase) firebase.auth().signOut();
   localStorage.removeItem('samurai_active_user');
   window.location.href = 'auth.html';
 };
 
-window.lsSet = function(k,v){ try{ localStorage.setItem(window.CURRENT_USER + '_' + k,v); }catch(e){} };
+let syncTimeout = null;
+window.debouncedSync = function() {
+  if (syncTimeout) clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => {
+    if (!window.CURRENT_USER || !window.db) return;
+    const prefix = window.CURRENT_USER + '_';
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k.startsWith(prefix)) {
+        data[k.substring(prefix.length)] = localStorage.getItem(k);
+      }
+    }
+    window.db.collection('samurai_users').doc(window.CURRENT_USER).set(data).catch(console.error);
+  }, 2000);
+};
+
+window.lsSet = function(k,v){ try{ localStorage.setItem(window.CURRENT_USER + '_' + k,v); debouncedSync(); }catch(e){} };
 window.lsGet = function(k){ try{ return localStorage.getItem(window.CURRENT_USER + '_' + k); }catch(e){ return null; } };
 window.lsGetJSON = function(k){ try{ return JSON.parse(localStorage.getItem(window.CURRENT_USER + '_' + k)); }catch(e){ return null; } };
-window.lsSetJSON = function(k,v){ try{ localStorage.setItem(window.CURRENT_USER + '_' + k,JSON.stringify(v)); }catch(e){} };
+window.lsSetJSON = function(k,v){ try{ localStorage.setItem(window.CURRENT_USER + '_' + k,JSON.stringify(v)); debouncedSync(); }catch(e){} };
 
 /* ═══ RATING & MASTERY SYSTEM ═══ */
 // Mastery levels: unseen → seen → reviewed → learned → mastered
@@ -526,6 +600,9 @@ document.addEventListener('keydown', e => {
 window.buildNavbar = function(activePage){
   const nav = document.querySelector('nav.samurai-nav');
   if(!nav) return;
+  const userDisplay = localStorage.getItem('samurai_active_email') || 'User';
+  const shortName = userDisplay.split('@')[0];
+  
   nav.innerHTML = `
     <a class="nav-brand" href="index.html">⚔️ JLPT SAMURAI <span>侍</span></a>
     <div class="nav-links">
@@ -534,7 +611,7 @@ window.buildNavbar = function(activePage){
       <a class="nav-link ${activePage==='n4'?'active':''}" href="n4.html">N4</a>
       <a class="nav-link ${activePage==='kana'?'active':''}" href="kana.html">Kana</a>
       <a class="nav-link ${activePage==='about'?'active':''}" href="about.html">About</a>
-      ${window.CURRENT_USER ? `<div class="nav-user-chip" onclick="logout()" title="Click to logout">👤 ${window.CURRENT_USER}</div>` : ''}
+      ${window.CURRENT_USER ? `<div class="nav-user-chip" onclick="logout()" title="Click to logout">👤 ${shortName}</div>` : ''}
     </div>`;
 };
 
