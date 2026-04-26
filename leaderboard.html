@@ -43,10 +43,8 @@
   buildFooter();
   initSakura();
   
-  window.addEventListener('DOMContentLoaded', () => {
-    initFirebase(() => {
-      fetchLeaderboard();
-    });
+  initFirebase(() => {
+    fetchLeaderboard();
   });
 
   async function fetchLeaderboard() {

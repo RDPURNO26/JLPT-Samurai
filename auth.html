@@ -158,23 +158,25 @@ function loginSuccess(uid, email, username) {
 }
 
 // Auto-login if Firebase session is still active
-window.addEventListener('DOMContentLoaded', () => {
-  if (typeof initFirebase === 'function') {
-    initFirebase(() => {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          // Attempt to fetch username
-          firebase.firestore().collection('samurai_users').doc(user.uid).get().then(doc => {
-            const username = doc.exists && doc.data().username ? doc.data().username : user.email.split('@')[0];
-            loginSuccess(user.uid, user.email, username);
-          }).catch(() => {
-            loginSuccess(user.uid, user.email, user.email.split('@')[0]);
-          });
-        }
-      });
+if (typeof initFirebase === 'function') {
+  initFirebase(() => {
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        // Attempt to fetch username
+        firebase.firestore().collection('samurai_users').doc(user.uid).get().then(doc => {
+          const username = doc.exists && doc.data().username ? doc.data().username : user.email.split('@')[0];
+          loginSuccess(user.uid, user.email, username);
+        }).catch(() => {
+          loginSuccess(user.uid, user.email, '');
+        });
+      } else {
+        hideLoader();
+      }
     });
-  }
-});
+  });
+} else {
+  hideLoader();
+}
 </script>
 </body>
 </html>
