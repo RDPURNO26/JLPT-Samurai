@@ -482,8 +482,10 @@ window.SamuraiQuiz = class {
         opts=[w.reading||w.roma,...others.map(x=>x.reading||x.roma)];
       }
     } else {
+      if(type==='roma' && !w.roma) type = 'jp_bn'; // Fallback if no romaji
+      
       if(type==='jp_bn'){
-        prompt='What is the Bangla meaning?'; display=w.jp; displaySub=w.roma; correct=w.bn;
+        prompt='What is the Bangla meaning?'; display=w.jp; displaySub=w.roma||''; correct=w.bn;
         opts=[w.bn,...others.map(x=>x.bn)];
       } else if(type==='bn_jp'){
         prompt='Which Japanese word matches?'; display=w.bn; correct=w.jp;
@@ -492,15 +494,32 @@ window.SamuraiQuiz = class {
         prompt='Listen and identify'; display='🔊'; correct=w.jp;
         opts=[w.jp,...others.map(x=>x.jp)];
       } else {
-        prompt='What is the romaji?'; display=w.jp; correct=w.roma||'—';
-        opts=[w.roma||'—',...others.map(x=>x.roma||'—')];
+        prompt='What is the romaji?'; display=w.jp; correct=w.roma;
+        opts=[w.roma,...others.map(x=>x.roma)];
       }
     }
-    // Shuffle options and ensure unique
-    opts = [...new Set(opts)].sort(()=>Math.random()-0.5);
-    if(opts.length < 4){
-      while(opts.length < 4) opts.push('—');
+    
+    // Shuffle options and ensure unique, removing falsy/dash values
+    opts = [...new Set(opts.filter(x => x && x !== '—' && x !== '-'))];
+    
+    // Fill from global pool if we don't have 4 options
+    if(opts.length < 4 && window.WORDS && window.WORDS.length > 0){
+      const globalOthers = [...window.WORDS].sort(()=>Math.random()-0.5);
+      for(const gx of globalOthers) {
+        if (opts.length >= 4) break;
+        let val;
+        if(this.isKanji) {
+           val = type==='kanji_bn' ? gx.bn : (gx.reading||gx.roma);
+        } else {
+           if(type==='jp_bn') val = gx.bn;
+           else if(type==='bn_jp' || type==='audio') val = gx.jp;
+           else val = gx.roma;
+        }
+        if (val && val !== '—' && val !== '-' && !opts.includes(val)) opts.push(val);
+      }
     }
+    
+    opts = opts.sort(()=>Math.random()-0.5);
     return {w, type, prompt, display, displaySub, correct, opts: opts.slice(0,4), origIdx, mnemonic: w.mnemonic||w.mn||''};
   }
 
