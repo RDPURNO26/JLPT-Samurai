@@ -276,6 +276,11 @@ window.kNext = function(){if(quiz.next())renderKQ();else showKResult();};
 function showKResult(){
   if(timer){timer.stop();timer=null;}
   const r=quiz.getResult();
+  
+  // Award XP for beating the quiz
+  const earnedXP = (r.score * 5) + (r.pct >= 85 ? 25 : 0);
+  if(window.addQuizXP && earnedXP > 0) window.addQuizXP(earnedXP);
+
   document.getElementById('quiz-active').style.display='none';
   const el=document.getElementById('quiz-result');el.style.display='block';
   el.innerHTML=`<div class="quiz-result">
@@ -285,7 +290,7 @@ function showKResult(){
     <div class="result-grid">
       <div class="result-stat"><div class="result-stat-val" style="color:var(--green)">${r.score}</div><div class="result-stat-lbl">Correct</div></div>
       <div class="result-stat"><div class="result-stat-val" style="color:var(--red)">${r.total-r.score}</div><div class="result-stat-lbl">Wrong</div></div>
-      <div class="result-stat"><div class="result-stat-val" style="color:var(--gold)">${r.bestStreak}</div><div class="result-stat-lbl">Streak</div></div>
+      <div class="result-stat"><div class="result-stat-val" style="color:var(--gold)">+${earnedXP}</div><div class="result-stat-lbl">XP Earned</div></div>
     </div>
     ${r.wrongs.length?'<div class="wrong-list"><h4>Review these:</h4>'+r.wrongs.map(q=>`<div class="wrong-item"><span class="wrong-jp" style="color:var(--red);font-size:24px">${q.w.jp}</span><span class="wrong-bn">${q.w.roma}</span></div>`).join('')+'</div>':''}
     <div style="margin-top:20px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">

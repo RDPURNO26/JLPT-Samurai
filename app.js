@@ -180,6 +180,9 @@ window.debouncedSync = function() {
           if (val === 'learned') xp += 10;
           if (val === 'mastered') xp += 25;
         }
+        if (keyName === 'quiz_xp') {
+          xp += parseInt(val) || 0;
+        }
       }
     }
     const streak = parseInt(data['streak']) || 0;
@@ -196,6 +199,12 @@ window.lsSet = function(k,v){ try{ localStorage.setItem(window.CURRENT_USER + '_
 window.lsGet = function(k){ try{ return localStorage.getItem(window.CURRENT_USER + '_' + k); }catch(e){ return null; } };
 window.lsGetJSON = function(k){ try{ return JSON.parse(localStorage.getItem(window.CURRENT_USER + '_' + k)); }catch(e){ return null; } };
 window.lsSetJSON = function(k,v){ try{ localStorage.setItem(window.CURRENT_USER + '_' + k,JSON.stringify(v)); debouncedSync(); }catch(e){} };
+
+window.addQuizXP = function(amount) {
+  if(!amount || amount <= 0) return;
+  const current = parseInt(lsGet('quiz_xp')) || 0;
+  lsSet('quiz_xp', current + amount);
+};
 
 /* ═══ RATING & MASTERY SYSTEM ═══ */
 // Mastery levels: unseen → seen → reviewed → learned → mastered
@@ -738,6 +747,7 @@ window.showGuide = function() {
             <ul>
               <li><strong>একটি শব্দ পুরোপুরি শিখলে (Mastered):</strong> +২৫ XP</li>
               <li><strong>একটি শব্দ শিখলে (Learned):</strong> +১০ XP</li>
+              <li><strong>কুইজে সঠিক উত্তর দিলে:</strong> প্রতিটি সঠিক উত্তরে +৫ XP (৮৫% পেলে আরও +২৫ XP বোনাস!)</li>
               <li><strong>প্রতিদিনের স্ট্রিক (Daily Streak):</strong> প্রতিদিন +৫০ XP!</li>
             </ul>
             <p>আপনার XP স্বয়ংক্রিয়ভাবে ক্লাউডে সেভ হয়ে যাবে। আপনি বিশ্বের অন্যান্যদের তুলনায় কোথায় আছেন তা দেখতে <strong>Rankings</strong> ট্যাবে চেক করুন!</p>
