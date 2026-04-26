@@ -241,3 +241,23 @@ nav.samurai-nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);backgrou
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 ::-webkit-scrollbar-track{background:var(--bg)}
+
+/* ═══ MOBILE RESPONSIVE TWEAKS ═══ */
+@media (max-width: 600px) {
+  .lesson-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+  .lesson-card { padding: 15px 10px; }
+  .lesson-card h2 { font-size: 20px; }
+  .lesson-tabs { gap: 5px; flex-wrap: wrap; margin-bottom: 20px; }
+  .tab-btn { padding: 10px 5px; font-size: 11px; flex: 1; text-align: center; }
+  .flashcard-container { height: 260px; perspective: 800px; }
+  .flashcard-ja { font-size: 32px; }
+  .flashcard-romaji { font-size: 16px; }
+  .quiz-card { padding: 20px; }
+  .quiz-question { font-size: 30px; }
+  .quiz-option { padding: 12px; font-size: 14px; }
+  .word-list { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+  .word-list th, .word-list td { padding: 8px; font-size: 13px; }
+  .nav-links { gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .nav-user-chip { font-size: 10px; padding: 4px 8px; }
+  .main-content { padding: 15px; }
+}

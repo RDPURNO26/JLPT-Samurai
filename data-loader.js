@@ -12,12 +12,12 @@
     { path: 'VOCAB/N5/lesson1.txt', lesson: 1, format: 'csv' },
     { path: 'VOCAB/N5/lesson2.txt', lesson: 2, format: 'csv' },
     { path: 'VOCAB/N5/lesson3.txt', lesson: 3, format: 'csv' },
-    { path: 'VOCAB/N5/lesson4.txt', lesson: 4, format: 'csv' },
-    { path: 'VOCAB/N5/lesson5.txt', lesson: 5, format: 'csv' },
+    { path: 'VOCAB/N5/lesson4.txt', lesson: 4, format: 'dash' },
+    { path: 'VOCAB/N5/lesson5.txt', lesson: 5, format: 'dash' },
     { path: 'VOCAB/N5/Lesson6_Vocabulary.txt', lesson: 6, format: 'pipe' },
     { path: 'VOCAB/N5/Lesson_7_Vocabulary.txt', lesson: 7, format: 'pipe' },
-    { path: 'VOCAB/N5/lesson8.txt', lesson: 8, format: 'csv' },
-    { path: 'VOCAB/N5/lesson9.txt', lesson: 9, format: 'csv' },
+    { path: 'VOCAB/N5/lesson8.txt', lesson: 8, format: 'dash' },
+    { path: 'VOCAB/N5/lesson9.txt', lesson: 9, format: 'dash' },
     { path: 'VOCAB/N5/Lesson_10_Vocabulary.txt', lesson: 10, format: 'pipe' },
     { path: 'VOCAB/N5/L11_Anki.txt', lesson: 11, format: 'anki' },
     { path: 'VOCAB/N5/L12_Anki_FULL.txt', lesson: 12, format: 'anki' },
@@ -172,6 +172,34 @@
     return words;
   }
 
+  /* ── Dash List Parser (1. Word — Meaning) ─────────────────────── */
+  function parseDash(text, lessonId) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    const words = [];
+    const regex = /^\d+\.\s*(.+?)\s*[—\-]\s*(.+)$/;
+
+    let idx = 0;
+    for (const line of lines) {
+      if (line.includes('LESSON')) continue;
+      const match = line.match(regex);
+      if (match) {
+        words.push({
+          id: idx + 1,
+          jp: match[1].trim(),
+          roma: '', // Not provided
+          bn: match[2].trim(),
+          lessonId: lessonId,
+          rating: lsGet(`samurai_rating_${lessonId}_${idx}`),
+          ratingDate: lsGet(`samurai_rating_date_${lessonId}_${idx}`),
+          masteryLevel: lsGet(`samurai_mastery_${lessonId}_${idx}`) || 'unseen',
+          quizWrong: parseInt(lsGet(`samurai_qwrong_${lessonId}_${idx}`)) || 0,
+        });
+        idx++;
+      }
+    }
+    return words;
+  }
+
   /* ── Kanji Parser ──────────────────────────────────────── */
   function parseKanji(text) {
     const lines = text.split(/\r?\n/).filter(l => l.trim());
@@ -251,6 +279,7 @@
           case 'csv': words = parseCSV(text, f.lesson); break;
           case 'pipe': words = parsePipe(text, f.lesson); break;
           case 'anki': words = parseAnki(text, f.lesson); break;
+          case 'dash': words = parseDash(text, f.lesson); break;
           default: words = [];
         }
         vocab[f.lesson] = words;
