@@ -82,11 +82,21 @@ window.speak = function(text, btnEl){
   window.speechSynthesis.speak(u);
 };
 
-/* ═══ LOCALSTORAGE HELPERS ═══ */
-window.lsSet = function(k,v){ try{ localStorage.setItem(k,v); }catch(e){} };
-window.lsGet = function(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } };
-window.lsGetJSON = function(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } };
-window.lsSetJSON = function(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
+/* ═══ AUTHENTICATION & LOCALSTORAGE HELPERS ═══ */
+window.CURRENT_USER = localStorage.getItem('samurai_active_user');
+if (!window.CURRENT_USER && !window.location.href.includes('auth.html')) {
+  window.location.href = 'auth.html';
+}
+
+window.logout = function() {
+  localStorage.removeItem('samurai_active_user');
+  window.location.href = 'auth.html';
+};
+
+window.lsSet = function(k,v){ try{ localStorage.setItem(window.CURRENT_USER + '_' + k,v); }catch(e){} };
+window.lsGet = function(k){ try{ return localStorage.getItem(window.CURRENT_USER + '_' + k); }catch(e){ return null; } };
+window.lsGetJSON = function(k){ try{ return JSON.parse(localStorage.getItem(window.CURRENT_USER + '_' + k)); }catch(e){ return null; } };
+window.lsSetJSON = function(k,v){ try{ localStorage.setItem(window.CURRENT_USER + '_' + k,JSON.stringify(v)); }catch(e){} };
 
 /* ═══ RATING & MASTERY SYSTEM ═══ */
 // Mastery levels: unseen → seen → reviewed → learned → mastered
@@ -524,6 +534,7 @@ window.buildNavbar = function(activePage){
       <a class="nav-link ${activePage==='n4'?'active':''}" href="n4.html">N4</a>
       <a class="nav-link ${activePage==='kana'?'active':''}" href="kana.html">Kana</a>
       <a class="nav-link ${activePage==='about'?'active':''}" href="about.html">About</a>
+      ${window.CURRENT_USER ? `<div class="nav-user-chip" onclick="logout()" title="Click to logout">👤 ${window.CURRENT_USER}</div>` : ''}
     </div>`;
 };
 

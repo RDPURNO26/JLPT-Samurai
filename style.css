@@ -28,6 +28,8 @@ nav.samurai-nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);backgrou
 .nav-link:hover{color:var(--white)}
 .nav-link.active{color:var(--red);border-bottom-color:var(--red);text-shadow:0 0 12px var(--red-glow)}
 @media(max-width:600px){.nav-link{padding:8px 10px;font-size:10px;letter-spacing:1px}}
+.nav-user-chip{padding:4px 10px;border-radius:20px;background:rgba(204,34,0,0.2);color:var(--white);font-family:var(--font-mono);font-size:11px;cursor:pointer;margin-left:8px;border:1px solid var(--red);transition:all .2s;}
+.nav-user-chip:hover{background:var(--red);transform:translateY(-2px);}
 
 /* ═══ SAKURA CANVAS ═══ */
 #sakura-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
