@@ -458,7 +458,7 @@ window.SamuraiQuiz = class {
       picked.push({word: pWord, origIdx: pWord.originalIdx});
     }
 
-    const types = this.isKanji ? ['kanji_bn','kanji_reading'] : ['jp_bn','bn_jp','audio','roma'];
+    const types = this.isKanji ? ['kanji_full','kanji_reading'] : ['jp_bn','bn_jp','audio','roma'];
     for(const item of picked){
       const w = item.word;
       let t = this.type;
@@ -474,10 +474,17 @@ window.SamuraiQuiz = class {
     let prompt, display, correct, opts, displaySub='';
 
     if(this.isKanji){
-      prompt='What is the reading and meaning?'; 
-      display=w.kanji||w.jp; 
-      correct=`${w.reading||w.roma} (${w.bn})`;
-      opts=[correct, ...others.map(x=>`${x.reading||x.roma} (${x.bn})`)];
+      if(type==='kanji_reading'){
+        prompt='What is the reading?'; 
+        display=w.kanji||w.jp; 
+        correct=w.reading||w.roma;
+        opts=[w.reading||w.roma,...others.map(x=>x.reading||x.roma)];
+      } else {
+        prompt='What is the reading and meaning?'; 
+        display=w.kanji||w.jp; 
+        correct=`${w.reading||w.roma} (${w.bn})`;
+        opts=[correct, ...others.map(x=>`${x.reading||x.roma} (${x.bn})`)];
+      }
     } else {
       if(type==='roma' && !w.roma) type = 'jp_bn'; // Fallback if no romaji
       
@@ -506,7 +513,7 @@ window.SamuraiQuiz = class {
         if (opts.length >= 4) break;
         let val;
         if(this.isKanji) {
-           val = `${gx.reading||gx.roma} (${gx.bn})`;
+           val = type==='kanji_reading' ? (gx.reading||gx.roma) : `${gx.reading||gx.roma} (${gx.bn})`;
         } else {
            if(type==='jp_bn') val = gx.bn;
            else if(type==='bn_jp' || type==='audio') val = gx.jp;
