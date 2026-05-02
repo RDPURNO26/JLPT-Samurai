@@ -72,6 +72,9 @@
       <button class="btn btn-primary" onclick="fcFlip()">Flip</button>
       <button class="btn" id="fc-next" onclick="fcNav(1)">Next →</button>
     </div>
+    <div style="text-align:center; margin-top:20px;">
+      <button class="btn" onclick="exitFlashcards()" style="font-size:12px; color:var(--muted); border-color:var(--border);">🚪 Exit for now</button>
+    </div>
     <div id="fc-summary" style="display:none;margin-top:24px"></div>
   </div>
 
@@ -97,12 +100,10 @@
               <span class="radio-chip" data-val="unseen">Unseen</span>
             </div>
           </div>
-          <div class="quiz-opt-group"><label>Questions</label>
+          <div class="quiz-opt-group"><label>Length</label>
             <div class="radio-row" id="qc-row">
-              <span class="radio-chip" data-val="10">10</span>
-              <span class="radio-chip sel" data-val="20">20</span>
-              <span class="radio-chip" data-val="30">30</span>
-              <span class="radio-chip" data-val="all">All</span>
+              <span class="radio-chip sel" data-val="20">20 Words</span>
+              <span class="radio-chip" data-val="all">Full Quiz</span>
             </div>
           </div>
         </div>
@@ -150,7 +151,7 @@ function init(){
     document.getElementById('lesson-title').textContent = `🏆 GRAND DOJO`;
     document.getElementById('lesson-sub').textContent = `Cumulative Trial (Lessons 1 to ${maxLesson}) · ${WORDS.length} words`;
     document.title = `JLPT Samurai — Grand Dojo`;
-  } else if (type === 'weak_vocab') {
+  } else if (type === 'weak_vocab' || type === 'weak_vocab_fc') {
     WORDS = getAllWeakWords();
     document.getElementById('lesson-title').textContent = `❤️‍🩹 THE INFIRMARY`;
     document.getElementById('lesson-sub').textContent = `Targeted Weakness Training · ${WORDS.length} words`;
@@ -169,6 +170,12 @@ function init(){
   buildWordList(WORDS);
   initFlashcards();
   initQuizUI();
+  
+  if (type === 'weak_vocab_fc') {
+    // Fake the click to trigger showTab and UI states correctly
+    const fcTabBtn = document.querySelectorAll('.tab-btn')[1];
+    if (fcTabBtn) fcTabBtn.click();
+  }
 }
 
 /* ═══ TAB SWITCHING ═══ */
@@ -237,6 +244,10 @@ function initFlashcards(){
   });
   renderFC();
 }
+
+window.exitFlashcards = function(){
+  showTab('list');
+};
 
 function renderFC(){
   if(!fc || !fc.current()) return;
@@ -354,7 +365,12 @@ function getRadio(id){
 window.startQuiz = function(){
   const type = getRadio('qt-row') || 'mixed';
   const pool = getRadio('qp-row') || 'all';
-  const count = getRadio('qc-row') || '20';
+  let count = getRadio('qc-row') || '20';
+  
+  const urlType = params.get('type');
+  if (urlType === 'weak_vocab' || urlType === 'weak_vocab_fc') {
+    count = 'all'; // Force ALL for Infirmary
+  }
 
   let words = [...WORDS];
   if(pool==='hard') words = words.filter(w=>isWeakWord('vocab',w.lessonId,w.originalIdx));

@@ -348,8 +348,7 @@ window.getLessonStatus = function(lessonId){
   const pct = Math.round(mastered/words.length*100);
   let status = '🔴';
   if(seen===0) status = '🔴';
-  else if(mastered===words.length) status = '🏆';
-  else if(lsGet(`samurai_quiz_passed_${lessonId}`)) status = '⚔️';
+  else if(mastered===words.length || lsGet(`samurai_quiz_passed_${lessonId}`)) status = '🟢';
   else status = '🟡';
   return {status, pct, total: words.length, weak, due, seen, mastered};
 };
@@ -461,11 +460,8 @@ window.SamuraiQuiz = class {
       if(!seen.has(key)){ seen.add(key); picked.push(item); }
       if(picked.length >= this.count) break;
     }
-    // If not enough unique, cycle
-    while(picked.length < this.count && pool.length > 0){
-      const pWord = pool[picked.length % pool.length];
-      picked.push({word: pWord, origIdx: pWord.originalIdx});
-    }
+    // If not enough unique, we DO NOT cycle anymore per user request.
+    // The quiz will simply have fewer questions than this.count.
 
     const types = this.isKanji ? ['kanji_full','kanji_reading'] : ['jp_bn','bn_jp','audio','roma'];
     for(const item of picked){
@@ -585,7 +581,11 @@ window.SamuraiFlashcards = class {
     this.isKanji = opts.isKanji || false;
     this.filter = 'all';
     this.deck = [...words];
-    this.idx = 0;
+    
+    // Load saved index if it exists for this lesson, and ensure it is valid
+    const savedIdx = parseInt(lsGet(`samurai_fc_idx_${this.lessonId}`));
+    this.idx = (!isNaN(savedIdx) && savedIdx >= 0 && savedIdx < this.deck.length) ? savedIdx : 0;
+    
     this.flipped = false;
     this.reviewedCount = 0;
     this.sessionRatings = {};
@@ -614,8 +614,12 @@ window.SamuraiFlashcards = class {
   total(){ return this.deck.length; }
   progress(){ return this.deck.length ? (this.idx+1)/this.deck.length*100 : 0; }
 
+  _saveProgress(){
+    if(this.lessonId) lsSet(`samurai_fc_idx_${this.lessonId}`, this.idx);
+  }
+
   flip(){ this.flipped = !this.flipped; return this.flipped; }
-  nav(dir){ this.idx = Math.max(0, Math.min(this.deck.length-1, this.idx+dir)); this.flipped=false; }
+  nav(dir){ this.idx = Math.max(0, Math.min(this.deck.length-1, this.idx+dir)); this.flipped=false; this._saveProgress(); }
 
   shuffle(){
     for(let i=this.deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[this.deck[i],this.deck[j]]=[this.deck[j],this.deck[i]];}

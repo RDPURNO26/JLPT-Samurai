@@ -54,7 +54,10 @@
       <div class="infirmary-box">
         <div class="inf-count" id="inf-count">0</div>
         <div class="inf-desc">Words that wounded you in battle.</div>
-        <a href="lesson.html?type=weak_vocab" class="btn btn-primary" id="inf-btn" style="text-decoration:none;display:inline-block;padding:12px 24px;">⚔️ SOLVE IT</a>
+        <div id="inf-actions" style="margin-top:16px;">
+          <a href="lesson.html?type=weak_vocab_fc" class="btn btn-secondary" style="text-decoration:none;display:inline-block;padding:12px 24px;margin-bottom:8px;border-color:var(--gold);color:var(--gold);">🎴 STUDY FLASHCARDS</a><br>
+          <a href="lesson.html?type=weak_vocab" class="btn btn-primary" id="inf-btn" style="text-decoration:none;display:inline-block;padding:12px 24px;">⚔️ SOLVE IT</a>
+        </div>
       </div>
     </div>
 
@@ -113,7 +116,7 @@
     if(weakWords.length === 0) {
       countEl.style.color = 'var(--green)';
       countEl.style.textShadow = '0 0 20px rgba(0,255,0,0.5)';
-      document.getElementById('inf-btn').style.display = 'none';
+      document.getElementById('inf-actions').style.display = 'none';
       document.querySelector('.inf-desc').textContent = 'Your mind is clear. No weak words found.';
     }
 
