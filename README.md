@@ -19,9 +19,11 @@
 
 *   **Kana Dojo:** Interactive Hiragana and Katakana study grid with native audio pronunciation.
 *   **Vocabulary Mastery:** Comprehensive N5 and N4 vocabulary lists with native speech synthesis.
-*   **3D Flashcards:** Interactive, flip-based flashcards to drill meanings and romaji.
+*   **3D Flashcards:** Interactive, flip-based flashcards to drill meanings and romaji, with auto-save so you can resume exactly where you left off.
 *   **Spaced Repetition System (SRS):** Tracks your weak words, ratings, and mastery levels automatically.
-*   **Samurai Quiz Engine:** High-speed time-attack quizzes for Kana, Vocabulary, and Kanji.
+*   **The Infirmary:** A dedicated section to heal your weak words by forcing full-length practice sessions.
+*   **Samurai Quiz Engine:** High-speed time-attack quizzes with customizable lengths for Kana, Vocabulary, and Kanji.
+*   **Global Leaderboard:** Earn XP by completing quizzes, mastering words, and keeping your daily streak alive to rank up from Ashigaru to Shogun!
 *   **Cloud Sync:** Firebase Integration allows you to create an account and sync your progress seamlessly between your PC and Mobile phone.
 *   **Responsive Dark Theme:** A premium, fully responsive UI engineered for both desktop monitors and mobile screens.
 
@@ -49,5 +51,7 @@ You don't need to build anything. The project is completely static and browser-n
 
 ## 👤 About the Author
 
-Created by **RDPURNO26**. 
-Checkout the [About Page](https://rdpurno26.github.io/JLPT-Samurai/about.html) on the live site to see other notable projects like AURA and UniLib.
+Created by **RD Purno**. 
+
+Explore my other works, projects, and detailed background on my official portfolio website:
+👉 **[rdpurno.vercel.app](https://rdpurno.vercel.app/)**
