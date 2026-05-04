@@ -24,6 +24,7 @@
     { path: 'VOCAB/N5/L13_Anki_FULL.txt', lesson: 13, format: 'anki' },
     { path: 'VOCAB/N5/L14_Anki-1.txt', lesson: 14, format: 'anki' },
     { path: 'VOCAB/N5/L15_Anki-1.txt', lesson: 15, format: 'anki' },
+    { path: 'VOCAB/N5/Lesson16_Vocabulary.txt', lesson: 16, format: 'pipe' },
   ];
 
   const KANJI_FILE = 'Kanji/Kanji n5/JLPT_N5_Kanji_Purno according to the deck.txt';
